@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { deptColor, href } from '../lib/format';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  n: number;
+}
+const { project, n } = Astro.props;
+const { data, id } = project;
+const search = `${data.name} ${data.summary} ${data.authors.join(' ')} ${data.tags.join(' ')}`.toLowerCase();
+const accession = String(n).padStart(2, '0');
+---
+
+<li
+  class="row"
+  style={`--dept:${deptColor(data.department)}`}
+  data-department={data.department}
+  data-type={data.type}
+  data-tags={data.tags.join('|')}
+  data-search={search}
+>
+  <span class="row-no" aria-hidden="true">{accession}</span>
+
+  <h3 class="row-name">
+    <a href={href(`projects/${id}`)}>{data.name}</a>
+    {data.featured && <span class="row-star" title="Featured" aria-label="Featured">★</span>}
+  </h3>
+
+  <span class="row-type">{data.type}</span>
+
+  <p class="row-meta">
+    <span class="dept-name">{data.department}</span> ·
+    <span class="authors">{data.authors.join(', ')}</span>
+  </p>
+
+  {
+    data.tags.length > 0 && (
+      <ul class="row-tags" aria-label="Tags">
+        {data.tags.map((t) => <li>{t}</li>)}
+      </ul>
+    )
+  }
+</li>

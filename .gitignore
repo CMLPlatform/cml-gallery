@@ -1,0 +1,16 @@
+# build output
+dist/
+.astro/
+lcov.info
+
+# dependencies
+node_modules/
+
+# logs & env
+npm-debug.log*
+.env
+.env.production
+
+# os
+.DS_Store
+

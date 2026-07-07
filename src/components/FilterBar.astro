@@ -1,0 +1,60 @@
+---
+interface Props {
+  departments: readonly string[];
+  types: readonly string[];
+  tags: string[];
+  contribute?: string;
+}
+const { departments, types, tags, contribute } = Astro.props;
+---
+
+<section class="console" aria-label="Filter the register">
+  <div class="wrap">
+    <div class="console-grid">
+      <div class="field search">
+        <label for="q">Find</label>
+        <input
+          type="search"
+          id="q"
+          name="q"
+          placeholder="name, author, keyword…"
+          autocomplete="off"
+        />
+      </div>
+      <div class="field">
+        <label for="dept">Dept</label>
+        <select id="dept" name="dept">
+          <option value="">all</option>
+          {departments.map((d) => <option value={d}>{d}</option>)}
+        </select>
+      </div>
+      <div class="field">
+        <label for="type">Type</label>
+        <select id="type" name="type">
+          <option value="">all</option>
+          {types.map((t) => <option value={t}>{t}</option>)}
+        </select>
+      </div>
+      {
+        contribute && (
+          <a class="add" href={contribute}>
+            + add via pull request
+          </a>
+        )
+      }
+    </div>
+
+    {
+      tags.length > 0 && (
+        <div class="tagfilter" role="group" aria-label="Filter by tag">
+          <span class="eyebrow">Tags</span>
+          {tags.map((t) => (
+            <button type="button" class="tag-toggle" data-tag={t} aria-pressed="false">
+              {t}
+            </button>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</section>

@@ -1,0 +1,29 @@
+---
+/**
+ * Embed an externally-hosted interactive thing (a chart, notebook, dashboard,
+ * video…) as a sandboxed, lazy-loaded, responsive iframe. Available in project
+ * `.mdx` entries without an import:
+ *
+ *   <Embed src="https://observablehq.com/embed/@you/co2" title="CO₂ flows" />
+ *
+ * The interactive artifact stays hosted wherever it's maintained; the gallery
+ * only frames it. `title` is required (screen-reader label for the frame).
+ */
+interface Props {
+  src: string;
+  title: string;
+  ratio?: string; // aspect ratio, e.g. "16/9" (default), "4/3", "1/1"
+}
+const { src, title, ratio = '16 / 9' } = Astro.props;
+---
+
+<figure class="embed">
+  <iframe
+    src={src}
+    title={title}
+    loading="lazy"
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+    referrerpolicy="no-referrer"
+    allowfullscreen
+    style={`aspect-ratio: ${ratio};`}></iframe>
+</figure>

@@ -1,0 +1,15 @@
+---
+import { tagColor } from '../lib/format';
+interface Props {
+  tag: string;
+}
+const { tag } = Astro.props;
+const color = tagColor(tag);
+---
+
+<li
+  class="tag"
+  style={`color:${color}; border-color:${color}; background:color-mix(in srgb, ${color} 8%, transparent)`}
+>
+  {tag}
+</li>

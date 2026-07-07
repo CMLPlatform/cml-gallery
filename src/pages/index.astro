@@ -1,0 +1,93 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import FilterBar from "../components/FilterBar.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { DEPARTMENTS, PROJECT_TYPES } from "../content.config";
+
+const projects = (
+  await getCollection("projects", ({ data }) => !data.draft)
+).sort((a, b) => {
+  if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+  return a.data.name.localeCompare(b.data.name);
+});
+
+const allTags = [...new Set(projects.flatMap((p) => p.data.tags))].sort();
+const deptCount = new Set(projects.map((p) => p.data.department)).size;
+const CONTRIBUTE =
+  "https://github.com/CMLPlatform/gallery-demo/blob/main/CONTRIBUTING.md";
+---
+
+<Base title="CML Project Register">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-head">
+        <div class="hero-lead">
+          <p class="eyebrow">Research Output Register</p>
+          <h1>Software, data &amp; models from CML Leiden.</h1>
+        </div>
+        <dl class="tally" aria-label="Register totals">
+          <div>
+            <dt>{projects.length === 1 ? "Entry" : "Entries"}</dt>
+            <dd>{String(projects.length).padStart(2, "0")}</dd>
+          </div>
+          <div>
+            <dt>{deptCount === 1 ? "Dept" : "Depts"}</dt>
+            <dd>{String(deptCount).padStart(2, "0")}</dd>
+          </div>
+        </dl>
+      </div>
+      <p class="notice">
+        Prototype for discussion with the institute: not an official CML site.
+        Sample entries are marked as such.
+      </p>
+    </div>
+  </section>
+
+  <FilterBar
+    departments={DEPARTMENTS}
+    types={PROJECT_TYPES}
+    tags={allTags}
+    contribute={CONTRIBUTE}
+  />
+
+  <div class="wrap">
+    <div class="register-head" aria-hidden="true">
+      <span class="col-no">№</span>
+      <span class="col-name">
+        Project: <span class="result-line" id="result-line"
+          >{projects.length} shown</span
+        >
+      </span>
+      <span class="col-type">Type</span>
+    </div>
+
+    <p class="sr-only" role="status" id="sr-status"></p>
+
+    <ul class="register">
+      {
+        projects.map((project, i) => (
+          <ProjectCard project={project} n={i + 1} />
+        ))
+      }
+    </ul>
+
+    <p class="empty" id="empty" hidden>
+      No entries match those filters. Try clearing one.
+    </p>
+
+    <div class="register-tail" aria-hidden="true">
+      <div class="row-blank"></div>
+      <div class="row-blank"></div>
+      <div class="row-blank"></div>
+      <p class="register-note">
+        The register grows one entry at a time: each is a single Markdown file
+        and a <a href={CONTRIBUTE}>pull request</a>.
+      </p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import "../scripts/filter.js";
+</script>

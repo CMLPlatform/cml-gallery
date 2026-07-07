@@ -1,0 +1,674 @@
+/* CML Project Gallery: global styles.
+   Direction: "The Register", the gallery is an accession ledger, not a card
+   grid. Ruled, numbered rows; tabular-mono numeric columns; names carry the
+   weight. Honest to what this is: a git-tracked catalogue of typed records.
+
+   Type:  Newsreader (display / project names: a journalistic reading-register
+          serif set at its display optical size, so the masthead reads as a
+          catalogue nameplate and echoes the "Register" thesis) · Atkinson
+          Hyperlegible Next (body: the Braille Institute's low-vision face, its
+          2025 revision with a steadier reading rhythm for long entries) · DM
+          Mono (ledger columns, labels, accession numbers).
+   Colour: warm oat-grey paper with a green-black ink and one botanical-green
+          accent (sampled from CML's logo). Slate + green department coding,
+          Okabe-Ito colourblind-safe tag hues. Light + dark. */
+
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource/atkinson-hyperlegible-next/400.css';
+@import '@fontsource/atkinson-hyperlegible-next/700.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+
+:root {
+  --paper: #eceee7; /* oat-grey with a green bias, a chosen neutral */
+  --surface: #ffffff;
+  --ink: #1c211d; /* green-black */
+  --ink-soft: #616b64;
+  --line: #c9cec6; /* structural rules */
+  --rule: #d7dbd3; /* lighter per-row rule */
+
+  --green: #0a6b46; /* botanical green, the single accent */
+  --green-bright: #0c855a;
+  --oxide: #a2571f; /* used only for the "featured" mark */
+
+  --dept-ie: #445b6b; /* Industrial Ecology, slate */
+  --dept-eb: #0a6b46; /* Environmental Biology, green */
+
+  /* Okabe-Ito hues, tuned to pass AA as tag text on a light tint. */
+  --ok-orange: #b06f00;
+  --ok-sky: #1f76a8;
+  --ok-green: #00795c;
+  --ok-yellow: #8a6d00;
+  --ok-blue: #0060a0;
+  --ok-vermillion: #c1440e;
+  --ok-purple: #a24d80;
+
+  --font-display: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+
+  --measure: 68ch;
+  --radius: 4px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14181a;
+    --surface: #1b2124;
+    --ink: #e7ece8;
+    --ink-soft: #9aa8a2;
+    --line: #2c3538;
+    --rule: #222a2d;
+
+    --green: #3fbf8a;
+    --green-bright: #58d3a0;
+    --oxide: #d38a4a;
+
+    --dept-ie: #7c9cb0;
+    --dept-eb: #3fbf8a;
+
+    /* lighter tag hues so text keeps contrast on dark surfaces */
+    --ok-orange: #f0b64a;
+    --ok-sky: #7cc7f0;
+    --ok-green: #4fd0a6;
+    --ok-yellow: #e0c96a;
+    --ok-blue: #5bb0ea;
+    --ok-vermillion: #ff8a5c;
+    --ok-purple: #e29bc4;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 560;
+  /* display optical size = the high-contrast masthead cut, not the text cut */
+  font-variation-settings: 'opsz' 72;
+  line-height: 1.08;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+}
+
+a {
+  color: var(--green);
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: var(--green-bright);
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.wrap {
+  width: min(100% - 2.5rem, 1080px);
+  margin-inline: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1rem;
+  z-index: 10;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Off-screen but readable by screen readers (e.g. the live filter status). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+/* ── header ────────────────────────────────────────────────── */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  padding: 0.9rem 0;
+}
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+.brand-mark {
+  display: block;
+  flex: none;
+}
+.brand-word {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.32rem;
+  letter-spacing: 0.01em;
+}
+.brand:hover .brand-word {
+  color: var(--green);
+}
+
+/* ── hero: the register masthead ───────────────────────────── */
+.hero {
+  padding: clamp(1.6rem, 3.5vw, 2.6rem) 0 0;
+}
+.hero-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem 2.5rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1rem;
+}
+.hero-lead {
+  flex: 1 1 30rem;
+}
+.hero h1 {
+  font-size: clamp(1.9rem, 4.4vw, 3rem);
+  max-width: 24ch; /* measured in the display font, keeps it to ~2 lines */
+  margin: 0.5rem 0 0;
+}
+/* register footing: a mono tally, not a hero KPI; small labels, tabular
+   zero-padded counts that read like the total ruled at the foot of a ledger */
+.hero .tally {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: grid;
+  gap: 0.3rem;
+}
+.hero .tally > div {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0.7rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.3rem;
+}
+.hero .tally dt {
+  white-space: nowrap;
+}
+.hero .tally dd {
+  margin: 0;
+  min-width: 2.4ch;
+  text-align: right;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.notice {
+  margin: 1rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--green);
+  padding: 0.35rem 0 0.35rem 0.8rem;
+  max-width: 64ch;
+}
+
+/* ── the register toolbar (search + filters) ───────────────── */
+.console {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 0.7rem 0;
+  margin-top: 1.4rem;
+}
+.console-grid {
+  display: grid;
+  gap: 0.6rem 0.8rem;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+@media (min-width: 680px) {
+  .console-grid {
+    grid-template-columns: 1fr auto auto auto;
+  }
+}
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  font-family: var(--font-mono);
+}
+.field label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.field input,
+.field select {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.44rem 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+.field.search {
+  flex: 1;
+}
+.field input:hover,
+.field select:hover,
+.field input:focus,
+.field select:focus {
+  border-color: var(--green);
+}
+.console .add {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--green);
+  align-self: center;
+}
+.console .add:hover {
+  text-decoration: underline;
+}
+
+.tagfilter {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.tagfilter .eyebrow {
+  color: var(--ink-soft);
+  margin-right: 0.2rem;
+}
+.tagfilter button {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  cursor: pointer;
+}
+.tagfilter button:hover {
+  border-color: var(--green);
+  color: var(--ink);
+}
+.tagfilter button[aria-pressed='true'] {
+  color: var(--surface);
+  background: var(--green);
+  border-color: var(--green);
+}
+
+/* ── the register itself ───────────────────────────────────── */
+.register-head {
+  display: grid;
+  grid-template-columns: 2.8rem 1fr 6.5rem;
+  gap: 1rem 1.2rem;
+  padding: 1rem 0.4rem 0.5rem 0.9rem;
+  border-left: 3px solid transparent; /* aligns columns with the ruled rows */
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.register-head .col-type {
+  text-align: right;
+}
+.result-line {
+  color: var(--green);
+}
+
+.register {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4rem;
+}
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.8rem 1fr 6.5rem;
+  gap: 0.3rem 1.2rem;
+  align-items: baseline;
+  padding: 0.95rem 0.4rem 0.95rem 0.9rem;
+  /* department colour as a ledger margin rule; the department name beside it
+     is always spelled out, so colour is never the only signal */
+  border-left: 3px solid var(--dept, transparent);
+  border-bottom: 1px solid var(--rule);
+}
+/* Motion is opt-in: only users who haven't asked to reduce it get the fade.
+   Reduced-motion users still get the instant hover state change, just no fade. */
+@media (prefers-reduced-motion: no-preference) {
+  .row {
+    transition: background 0.12s;
+  }
+}
+.row[hidden] {
+  display: none;
+}
+.row:hover {
+  background: color-mix(in srgb, var(--green) 7%, transparent);
+}
+.row-no {
+  grid-row: 1 / span 2;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  padding-top: 0.15rem;
+}
+.row-name {
+  margin: 0;
+  min-width: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.row-name a {
+  color: var(--ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.row:hover .row-name a {
+  color: var(--green);
+}
+/* stretched link: the whole row is clickable (no other links inside it) */
+.row-name a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.dept-name {
+  color: var(--dept, var(--ink-soft));
+}
+.row-star {
+  color: var(--oxide);
+  font-size: 0.8rem;
+  flex: none;
+}
+.row-type {
+  grid-column: 3;
+  grid-row: 1;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding-top: 0.3rem;
+}
+.row-meta {
+  grid-column: 2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.row-meta .authors {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.row-tags {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+.row-tags li::before {
+  content: '·';
+  margin-right: 0.55rem;
+  color: var(--green);
+}
+.row-tags li:first-child::before {
+  content: '';
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .register-head,
+  .row {
+    grid-template-columns: 2.2rem 1fr;
+  }
+  .register-head .col-type {
+    display: none;
+  }
+  .row-type {
+    grid-column: 2;
+    grid-row: auto;
+    text-align: left;
+    padding-top: 0.3rem;
+  }
+}
+
+/* Ruled blank lines: a real register keeps empty lines waiting to be filled.
+   Here they say the thing the whole project is about; the register grows one
+   Markdown file and one pull request at a time. Purely decorative, so they
+   carry no `.row` class and the filter script never counts them. */
+.register-tail {
+  padding-bottom: 4rem;
+}
+.row-blank {
+  height: 3.1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.register-note {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  padding: 1.1rem 0.4rem 0;
+}
+.register-note a {
+  color: var(--green);
+}
+
+.empty {
+  padding: 3rem 0;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+/* ── tags (shared: detail page) ────────────────────────────── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* ── detail page ───────────────────────────────────────────── */
+.detail {
+  padding: clamp(2rem, 5vw, 3.5rem) 0 4rem;
+}
+.back {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+.detail h1 {
+  font-size: clamp(1.9rem, 4.5vw, 2.9rem);
+  margin: 0.6rem 0 0.4rem;
+}
+.detail .lede {
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  margin: 0 0 1.5rem;
+}
+.meta {
+  display: grid;
+  gap: 0.9rem 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, auto));
+  border-block: 1px solid var(--line);
+  padding: 1.2rem 0;
+  margin-bottom: 1.5rem;
+}
+.meta dt {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.25rem;
+}
+.meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.detail-media {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+}
+.linkrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+.linkrow a {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.9rem;
+}
+.linkrow a:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.prose {
+  max-width: var(--measure);
+  font-size: 1.02rem;
+}
+.prose blockquote {
+  border-left: 3px solid var(--green);
+  margin-inline: 0;
+  padding-left: 1rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+/* embedded media in .mdx entries (<Embed>, <Figure>) */
+.embed,
+.figure {
+  margin: 1.5rem 0;
+}
+.embed iframe {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: block;
+}
+.figure img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: block;
+}
+.figure figcaption {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+/* ── footer ────────────────────────────────────────────────── */
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 2rem 0 3rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.site-footer .wrap {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,46 @@
+---
+# ─────────────────────────────────────────────────────────────────────────
+# TEMPLATE for an entry WITH embedded media (interactive chart, video, figure).
+#
+# Same as _TEMPLATE.md, but saved as .mdx so the body can use two built-in
+# components, no import needed. Use this only if you want to embed something;
+# otherwise _TEMPLATE.md is simpler. Copy, fill in, delete these comments,
+# open a PR. (Files starting with `_` are ignored, so this never appears.)
+# ─────────────────────────────────────────────────────────────────────────
+name: My Project Name
+summary: One sentence, ≤160 characters.
+authors:
+  - Your Name
+department: Industrial Ecology        # or "Environmental Biology"
+type: software                        # software | data | model | other
+tags:
+  - visualisation
+links:
+  repo: https://github.com/org/repo
+---
+
+Write the description in Markdown, same as a normal entry. Below are the two
+components you can drop in anywhere in this body.
+
+## An interactive embed
+
+Point at something hosted elsewhere (an Observable notebook, a Plotly/Streamlit
+app, a YouTube video…). It loads in a sandboxed, lazy iframe. `title` is
+required. Delete this block if unused.
+
+<Embed
+  src="https://example.org/your-hosted-interactive-thing"
+  title="Short description of the interactive content"
+  ratio="16/9"
+/>
+
+## A static figure
+
+For a chart or diagram exported as an image. `alt` is required; `caption` is
+optional. Put the image under `public/images/` or use a full URL.
+
+<Figure
+  src="/images/my-project/results.svg"
+  alt="Describe what the chart shows, for screen readers"
+  caption="Fig 1. A short caption."
+/>

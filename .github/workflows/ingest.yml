@@ -1,0 +1,41 @@
+name: Ingest showcase repos (optional)
+
+# OPTIONAL automated ingestion. Runs the fetcher, and if it produced any new
+# draft entries, opens a pull request with them for a maintainer to review.
+# Nothing is published automatically: drafts are excluded from the built site
+# until someone reviews a draft and removes `draft: true`.
+#
+# Disabled by default in effect: it only acts when repos carry the
+# `cml-showcase` topic. Remove this file if you prefer hand-curation only.
+
+on:
+  workflow_dispatch: # run manually from the Actions tab
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/fetch-github-projects.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/ingest-showcase
+          title: 'chore: draft entries from cml-showcase repos'
+          commit-message: 'chore: add draft project entries from GitHub ingestion'
+          body: |
+            Auto-generated **draft** entries from repositories tagged `cml-showcase`.
+
+            Each needs review before it goes live: set `department`, add `authors`,
+            check `type`, then remove `draft: true`. Close this PR to discard.
+          labels: ingestion, draft

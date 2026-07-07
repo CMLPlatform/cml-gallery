@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+import { href } from '../lib/format';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'A register of software and data projects from the CML Institute of Environmental Sciences.' } =
+  Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href={href('/')} aria-label="CML Project Register, home">
+          <svg class="brand-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="6" fill="#2f6b4f"></rect>
+            <path d="M16 6C10 10 8 14 8 19a8 8 0 0 0 16 0c0-5-2-9-8-13z" fill="#f2f4f1"></path>
+            <path d="M16 9v14" stroke="#2f6b4f" stroke-width="1.4" fill="none"></path>
+          </svg>
+          <span class="brand-word">CML</span>
+        </a>
+        <span class="eyebrow">Project Register</span>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>Prototype for discussion: not an official CML site.</span>
+        <a href="https://github.com/CMLPlatform">CMLPlatform on GitHub</a>
+      </div>
+    </footer>
+  </body>
+</html>

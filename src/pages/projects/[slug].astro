@@ -1,0 +1,85 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Tag from '../../components/Tag.astro';
+import Embed from '../../components/Embed.astro';
+import Figure from '../../components/Figure.astro';
+import { deptColor, href } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('projects', (entry) => !entry.data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { project: entry } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+
+// Only render the links a project actually has.
+const links = [
+  ['Repository', data.links.repo],
+  ['Live demo', data.links.demo],
+  ['Documentation', data.links.docs],
+  ['Paper / DOI', data.links.paper],
+].filter(([, url]) => url) as [string, string][];
+---
+
+<Base title={`${data.name} · CML Project Register`} description={data.summary}>
+  <article class="detail wrap">
+    <a class="back" href={href('/')}>&larr; All projects</a>
+    <p class="eyebrow" style={`color:${deptColor(data.department)}`}>
+      {data.department} · {data.type}
+    </p>
+    <h1>{data.name}</h1>
+    <p class="lede">{data.summary}</p>
+
+    {
+      data.links.image && (
+        <img class="detail-media" src={data.links.image} alt="" loading="lazy" decoding="async" />
+      )
+    }
+
+    <dl class="meta">
+      <div>
+        <dt>Authors</dt>
+        <dd>{data.authors.join(', ')}</dd>
+      </div>
+      <div>
+        <dt>Department</dt>
+        <dd>{data.department}</dd>
+      </div>
+      <div>
+        <dt>Type</dt>
+        <dd>{data.type}</dd>
+      </div>
+      {
+        data.tags.length > 0 && (
+          <div>
+            <dt>Tags</dt>
+            <dd>
+              <ul class="tags">
+                {data.tags.map((t) => <Tag tag={t} />)}
+              </ul>
+            </dd>
+          </div>
+        )
+      }
+    </dl>
+
+    {
+      links.length > 0 && (
+        <div class="linkrow">
+          {links.map(([label, url]) => (
+            <a href={url} rel="noopener noreferrer">
+              {label} &nearr;
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="prose">
+      <Content components={{ Embed, Figure }} />
+    </div>
+  </article>
+</Base>
