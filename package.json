@@ -13,6 +13,7 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
+    "prepare": "lefthook install",
     "test": "node --test 'src/**/*.test.ts'",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts'",
     "ingest": "node scripts/fetch-github-projects.mjs"
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@biomejs/biome": "^2.5.2",
-    "typescript": "^5.9.3"
+    "lefthook": "^2.1.9",
+    "typescript": "^6.0.3"
   }
 }
