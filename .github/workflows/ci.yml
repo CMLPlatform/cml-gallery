@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
+
 
 permissions:
   contents: read
@@ -12,16 +13,16 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
-          node-version: 24 # 23+ runs .ts tests without an experimental flag
+          node-version: 26
           cache: npm
       - run: npm ci
       - run: npm run lint
       - run: npm run check
       - run: npm run test:coverage
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           files: lcov.info
         env:
