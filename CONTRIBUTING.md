@@ -70,10 +70,10 @@ flow is: **copy the template, fill it in, open a pull request.**
   ```
 
   `<Embed>` loads the URL in a sandboxed, lazy iframe (`title` required for
-  screen readers). `<Figure>` is a captioned image (`alt` required). We
-  deliberately don't run custom scripts or charting libraries inside the site
-  (keeping it fast, private, and every PR easy to review), so interactive content
-  is embedded from its own host, not compiled in here.
+  screen readers). `<Figure>` is a captioned image (`alt` required). The site
+  deliberately doesn't run custom scripts or charting libraries — that would
+  make it slower and every PR harder to review — so interactive content is
+  embedded from its own host, not compiled in here.
 
 ## Editing or removing a project
 

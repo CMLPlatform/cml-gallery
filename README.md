@@ -1,12 +1,12 @@
 # CML Project Gallery
 
 A prototype public gallery for the software, data, and models built at the
-**CML: Institute of Environmental Sciences** (Leiden University), so colleagues
+**Institute of Environmental Sciences (CML)**, Leiden University, so colleagues
 can showcase their work in one place.
 
 > **Status: proposal-stage prototype.** Built to demonstrate an approach for
 > discussion with the institute. It is **not an official CML site**, and the two
-> sample projects are placeholders, clearly marked as such.
+> sample projects are clearly marked placeholders.
 
 ## The idea
 
@@ -27,7 +27,7 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)**. In short: copy
 ## What's here
 
 | Path | What it is |
-|------|-----------|
+| ---- | ---------- |
 | `src/content.config.ts` | The Zod schema: the ingestion contract. |
 | `src/content/projects/` | One Markdown file per project. `_TEMPLATE.md` is the template. |
 | `src/pages/index.astro` | Landing page: searchable, filterable card grid. |
@@ -90,16 +90,15 @@ public repositories in the `CMLPlatform` org that carry the **`cml-showcase`**
 topic and writes one draft entry per repo, derived from its description,
 homepage, topics, and README excerpt.
 
-Two guarantees keep it safe:
+Two safeguards:
 
 - Every generated entry is written with **`draft: true`**, so it's **excluded
   from the built site** until a maintainer reviews it, fills in the TODO fields
   (`department`, `authors`), and removes the flag.
-- **Existing files are never overwritten:** an entry is skipped if a file at its
-  slug (`<repo-name>.md`) already exists. Keep a promoted draft at that filename
-  so a future run won't re-draft it; rename it and a run may write a fresh
-  duplicate. The duplicate is harmless (it's a `draft` a maintainer reviews),
-  but worth knowing.
+- **Existing files are never overwritten:** a repo is skipped if
+  `<repo-name>.md` already exists. This is also why a promoted draft should
+  keep its filename — rename it, and the next run re-drafts that repo. The
+  duplicate arrives as a `draft` for review, so no harm done, but it's noise.
 
 [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) runs this weekly
 (and on demand) and opens a pull request with any new drafts, so review happens
@@ -108,6 +107,6 @@ hand-curation only.
 
 ## Context
 
-A proposal-stage prototype exploring shared research-infrastructure thinking at
-CML. It overlaps with an AI4IE web-apps showcase and could later share this
-template-and-PR ingestion approach.
+This prototype is meant to start a conversation about shared research
+infrastructure at CML. It overlaps with an AI4IE web-apps showcase, which could
+later reuse the same template-and-PR ingestion approach.
