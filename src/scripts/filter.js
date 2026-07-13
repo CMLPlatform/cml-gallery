@@ -46,6 +46,15 @@ q?.addEventListener('input', apply);
 dept?.addEventListener('change', apply);
 type?.addEventListener('change', apply);
 
+document.getElementById('clear-filters')?.addEventListener('click', () => {
+  if (q) q.value = '';
+  if (dept) dept.value = '';
+  if (type) type.value = '';
+  activeTags.clear();
+  for (const btn of tagButtons) btn.setAttribute('aria-pressed', 'false');
+  apply();
+});
+
 for (const btn of tagButtons) {
   btn.addEventListener('click', () => {
     const tag = btn.dataset.tag;

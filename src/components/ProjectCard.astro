@@ -22,16 +22,16 @@ const accession = String(n).padStart(2, '0');
 >
   <span class="row-no" aria-hidden="true">{accession}</span>
 
-  <h3 class="row-name">
+  <h2 class="row-name">
     <a href={href(`projects/${id}`)}>{data.name}</a>
     {data.featured && <span class="row-star" title="Featured" aria-label="Featured">★</span>}
-  </h3>
+  </h2>
 
   <span class="row-type">{data.type}</span>
 
   <p class="row-meta">
-    <span class="dept-name">{data.department}</span> ·
-    <span class="authors">{data.authors.join(', ')}</span>
+    {/* explicit separator: Astro collapses the whitespace around a bare "·" */}
+    <span class="dept-name">{data.department}</span>{' · '}<span class="authors">{data.authors.join(', ')}</span>
   </p>
 
   {
