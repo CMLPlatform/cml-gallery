@@ -8,6 +8,8 @@ can showcase their work in one place.
 > discussion with the institute. It is **not an official CML site**, and the two
 > sample projects are clearly marked placeholders.
 
+**[Live demo →](https://cmlplatform.github.io/cml-gallery/)**
+
 ## The idea
 
 Contribution should be as cheap as possible. Adding a project is **one templated
