@@ -26,5 +26,5 @@ researchers can reuse instead of each re-measuring the same devices.
 The stack is a FastAPI + PostgreSQL backend with a TypeScript/React front end,
 containerised with Docker and deployed through CI/CD.
 
-> **Sample project.** This entry demonstrates the register layout. Replace the
+> **Sample project.** This entry demonstrates the gallery layout. Replace the
 > links and details with the real project's before publishing.

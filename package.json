@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "packageManager": "npm@11.17.0",
   "description": "Prototype gallery of CML software and data projects (proposal-stage, not an official CML site).",
   "scripts": {
