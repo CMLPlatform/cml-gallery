@@ -6,7 +6,12 @@ updates:
       interval: weekly
     groups:
       npm:
-        patterns: [ "*" ]
+        patterns: ["*"]
+    ignore:
+      # NOTE: @astrojs/check 0.9.x peers on typescript ^5 || ^6, so a TS 7 bump
+      # fails npm ci. Drop this once astro-check accepts TS 7.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     cooldown:
       default-days: 3
 
@@ -16,6 +21,6 @@ updates:
       interval: weekly
     groups:
       github-actions:
-        patterns: [ "*" ]
+        patterns: ["*"]
     cooldown:
       default-days: 3
