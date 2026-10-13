@@ -25,3 +25,10 @@ test('license is an SPDX id and doi a bare DOI', () => {
   assert.equal(entrySchema.safeParse({ ...ok, license: 'MIT License' }).success, false);
   assert.equal(entrySchema.safeParse({ ...ok, doi: 'https://doi.org/10.5281/zenodo.1' }).success, false);
 });
+
+test('tags are lower-case words joined by dashes', () => {
+  assert.ok(entrySchema.safeParse({ ...entry({}), tags: ['open-data', 'lca2'] }).success);
+  for (const tag of ['Open Data', 'a|b', 'a,b', '']) {
+    assert.equal(entrySchema.safeParse({ ...entry({}), tags: [tag] }).success, false, tag);
+  }
+});

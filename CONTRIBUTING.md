@@ -23,7 +23,7 @@ flow is: **copy the template, fill it in, open a pull request.**
    | `authors` | ✔ | A list; at least one name. |
    | `department` | ✔ | `Industrial Ecology` or `Environmental Biology`. |
    | `type` | ✔ | `software`, `data`, `model`, or `other`. |
-   | `tags` | – | Keywords. They power the tag filter, so reuse existing ones where you can. |
+   | `tags` | – | Keywords in lower case with dashes (`open-data`). They power the tag filter, so reuse existing ones where you can. |
    | `license` | – | The SPDX licence id, e.g. `MIT`, `Apache-2.0`, `CC-BY-4.0`. |
    | `doi` | – | The project's **own** DOI, bare: `10.5281/zenodo.1234567`. For software or data on Zenodo, use the concept DOI, which covers every version. |
    | `links.repo` | – | Source repository URL. |

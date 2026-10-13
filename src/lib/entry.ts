@@ -21,6 +21,9 @@ const webUrl = z.url({ protocol: /^https?$/ });
 // The ingest script fills unknown fields with "TODO …"; a published entry must not keep one.
 const TODO = /^\s*TODO\b/i;
 
+// Cards join tags with `|` and filter links with `,`, so a tag is lower-case letters, digits and dashes.
+const TAG = /^[a-z0-9-]+$/;
+
 // An SPDX licence id such as `MIT` or `CC-BY-4.0`, and a bare DOI such as `10.5281/zenodo.1234567`.
 const SPDX_ID = /^[A-Za-z0-9.+-]+$/;
 const DOI = /^10\.\d{4,9}\/\S+$/;
@@ -41,7 +44,7 @@ export const entrySchema = z
 
     // Classification (drives the filters)
     type: z.enum(PROJECT_TYPES),
-    tags: z.array(z.string().min(1)).default([]),
+    tags: z.array(z.string().regex(TAG, 'Write tags in lower case with dashes, e.g. `open-data`.')).default([]),
 
     // Licence and identifier, both optional. `doi` is the project's own DOI, without
     // https://doi.org/: for software or data on Zenodo, the concept DOI that covers
