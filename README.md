@@ -43,6 +43,7 @@ npm run build    # production build to dist/ — also validates every entry
 npm run preview  # serve the production build
 npm run check    # astro check (types)
 npm test         # unit tests
+npm run test:a11y # axe on the built site; needs `npm run build`, `npx astro preview` and `npx playwright install chromium`
 ```
 
 ## Project layout
@@ -60,10 +61,11 @@ npm test         # unit tests
 
 - **Astro static site**, typed content collections, **zero client framework**.
   Filtering and search are plain DOM over the server-rendered list, so the
-  gallery still works with JavaScript disabled.
+  gallery still works with JavaScript disabled (the filter bar is hidden then).
 - **Accessible by default:** semantic HTML, labelled and keyboard-navigable
   filters, visible focus, WCAG-AA contrast, and colourblind-safe (Okabe-Ito)
-  category colours that are always paired with text.
+  category colours that are always paired with text. CI runs axe (WCAG 2.2 AA)
+  on every built page in light and dark mode.
 - **Fonts are self-hosted** (`@fontsource`), so the site makes no third-party
   requests — relevant for an EU institute.
 - Images are lazy-loaded.
