@@ -10,8 +10,9 @@
  *
  * Drafts are written with `draft: true`, so they're excluded from the built
  * site until a maintainer reviews one, fills the TODO fields (department,
- * and authors when no citation file named them), and removes the flag. Each draft is checked against the same
- * schema the site builds with before it is written.
+ * and authors when no citation file named them), and removes the flag. Each
+ * draft is checked against the same schema the site builds with before it is
+ * written.
  *
  * A repo is skipped when an existing entry already links to it
  * (`links.repo`), when a file of the same name exists (files are NEVER
@@ -23,9 +24,11 @@
  * Set GITHUB_TOKEN in the environment for a higher API rate limit (optional).
  */
 
-import { writeFile, mkdir, access, readdir, readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { writeFile, mkdir, readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
+import { parse as parseYaml } from 'yaml';
 import { entrySchema, SUMMARY_MAX } from '../src/lib/entry.ts';
 
 const ORG = 'CMLPlatform';
@@ -98,54 +101,20 @@ export function bareDoi(text) {
 
 /** Authors and DOI from a CITATION.cff: `authors:` names and the top-level `doi:`. */
 export function parseCitationCff(text) {
-  // shortcut: a line reader for the block YAML that cffinit and Zenodo write, not a YAML
-  // parser; flow-style `authors: [...]` and a DOI only under `identifiers:` are missed.
-  const scalar = (v) => {
-    const s = v.trim();
-    // A trailing comment can follow a quoted value too: `given-names: "Pat" # first`.
-    const quoted = /^(["'])(.*?)\1\s*(#.*)?$/.exec(s);
-    return quoted ? quoted[2] : s.replace(/\s+#.*$/, '');
-  };
-  const authors = [];
-  let doi;
-  let inAuthors = false;
-  let person = null;
-  let dashCol = -1; // column of the `-` that starts each author
-  let keyCol = -1; // column of an author's own keys; deeper lines are nested values
-  const flush = () => {
-    if (person) {
-      const name =
-        person.name ??
-        [person['given-names'], person['name-particle'], person['family-names'], person['name-suffix']]
-          .filter(Boolean)
-          .join(' ');
-      if (name) authors.push(name);
-    }
-    person = null;
-  };
-  for (const line of String(text).split(/\r?\n/)) {
-    if (/^\s*(#|$)/.test(line)) continue;
-    const top = /^([\w-]+):\s*(.*)$/.exec(line);
-    if (top) {
-      flush();
-      inAuthors = top[1] === 'authors';
-      dashCol = -1;
-      if (top[1] === 'doi') doi = bareDoi(scalar(top[2]));
-      continue;
-    }
-    const field = inAuthors && /^( *)(- +)?([\w-]+):\s*(.*)$/.exec(line);
-    if (!field) continue;
-    const col = field[1].length + (field[2]?.length ?? 0);
-    if (field[2] && (dashCol < 0 || field[1].length === dashCol)) {
-      flush();
-      person = {};
-      dashCol = field[1].length;
-      keyCol = col;
-    }
-    if (person && col === keyCol) person[field[3]] = scalar(field[4]);
+  let cff;
+  try {
+    cff = parseYaml(text);
+  } catch {
+    return { authors: [] }; // a broken file leaves the TODO placeholder for a maintainer
   }
-  flush();
-  return { authors, doi };
+  const authors = [cff?.authors ?? []]
+    .flat()
+    .map((p) =>
+      p?.name ??
+      [p?.['given-names'], p?.['name-particle'], p?.['family-names'], p?.['name-suffix']].filter(Boolean).join(' '),
+    )
+    .filter(Boolean);
+  return { authors, doi: bareDoi(cff?.doi) };
 }
 
 /** Authors and DOI from a codemeta.json (`author`, and `identifier` or `@id`). */
@@ -253,10 +222,6 @@ export async function absentOn404(promise) {
   }
 }
 
-async function exists(p) {
-  return access(p).then(() => true).catch(() => false);
-}
-
 const github = {
   async fetchRepos() {
     const search = await gh(`/search/repositories?q=org:${ORG}+topic:${TOPIC}&per_page=100`);
@@ -312,7 +277,7 @@ export async function main({
       ? 'listed in ingest-skip.txt'
       : linked.has(normRepoUrl(repo.html_url))
         ? 'an entry already links to it'
-        : (await exists(file)) || (await exists(`${file}x`))
+        : existsSync(file) || existsSync(`${file}x`)
           ? 'a file of that name exists, not overwritten'
           : null;
     if (reason) {

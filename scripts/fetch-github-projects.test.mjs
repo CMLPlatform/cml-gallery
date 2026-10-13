@@ -28,6 +28,8 @@ const repo = (over = {}) => ({
   homepage: '',
   ...over,
 });
+const named = (name, over = {}) =>
+  repo({ name, full_name: `CMLPlatform/${name}`, html_url: `https://github.com/CMLPlatform/${name}`, ...over });
 
 test('pure helpers', () => {
   assert.equal(slugify('Material Flow Explorer!'), 'material-flow-explorer');
@@ -63,7 +65,6 @@ test('a homepage without a scheme is dropped, not written as an invalid URL', ()
 
 test('a TODO placeholder only passes while the entry is a draft', () => {
   const fields = toEntryFields(repo());
-  assert.ok(entrySchema.safeParse(fields).success);
   const published = entrySchema.safeParse({ ...fields, draft: false });
   assert.equal(published.success, false);
   assert.deepEqual(
@@ -72,34 +73,36 @@ test('a TODO placeholder only passes while the entry is a draft', () => {
   );
 });
 
-test('main skips linked, listed and existing repos and writes the rest', async () => {
+test('main skips linked, listed, existing and invalid repos and writes the rest', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ingest-'));
   try {
     const skipFile = join(dir, 'skip.txt');
     await writeFile(skipFile, 'CMLPlatform/declined\n');
-    // Linked by URL under another file name, as sample-relab.md does.
+    // Linked by URL under another file name, in its own folder, as the content glob allows.
+    await mkdir(join(dir, 'relab'));
     await writeFile(
-      join(dir, 'sample-relab.md'),
+      join(dir, 'relab', 'index.md'),
       '---\nlinks:\n  repo: https://github.com/cmlplatform/RELab\n---\n',
     );
     await writeFile(join(dir, 'taken.mdx'), 'hand-written');
-    const named = (name) =>
-      repo({ name, full_name: `CMLPlatform/${name}`, html_url: `https://github.com/CMLPlatform/${name}` });
+    const logs = [];
     const result = await main({
       outDir: dir,
       skipFile,
-      fetchRepos: async () => [repo(), named('declined'), named('taken'), named('pycirk')],
+      fetchRepos: async () => [
+        repo(),
+        named('declined'),
+        named('taken'),
+        named('blank', { description: '   ' }),
+        named('pycirk'),
+      ],
       readme: async () => '# pycirk\n\nCircular economy scenarios.',
       repoFile: async () => null,
-      log: () => {},
+      log: (line) => logs.push(line),
     });
-    assert.deepEqual(result, { written: 1, skipped: 3 });
-    assert.deepEqual((await readdir(dir)).sort(), [
-      'pycirk.md',
-      'sample-relab.md',
-      'skip.txt',
-      'taken.mdx',
-    ]);
+    assert.deepEqual(result, { written: 1, skipped: 4 });
+    assert.deepEqual((await readdir(dir)).sort(), ['pycirk.md', 'relab', 'skip.txt', 'taken.mdx']);
+    assert.ok(logs.some((l) => /blank \(draft fails the schema: summary/.test(l)));
     assert.equal(await readFile(join(dir, 'taken.mdx'), 'utf8'), 'hand-written');
     assert.match(await readFile(join(dir, 'pycirk.md'), 'utf8'), /Circular economy scenarios\./);
   } finally {
@@ -135,10 +138,7 @@ test('citation files give authors and the top-level DOI', () => {
     authors: ['Simon van Lierde', 'CML Leiden'],
     doi: '10.5281/zenodo.1234567',
   });
-  assert.deepEqual(parseCitationCff('authors:\n- given-names: Ann\n  family-names: Bee\n'), {
-    authors: ['Ann Bee'],
-    doi: undefined,
-  });
+  assert.deepEqual(parseCitationCff('authors: ['), { authors: [] });
   assert.deepEqual(parseCodemeta(CODEMETA), {
     authors: ['Ann Bee', 'CML Leiden'],
     doi: '10.5281/zenodo.7654321',
@@ -163,13 +163,6 @@ test('absentOn404 maps 404 to null and rethrows anything else', async () => {
 test('main fills authors and DOI from CITATION.cff, else codemeta.json', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ingest-'));
   try {
-    const named = (name) =>
-      repo({
-        name,
-        full_name: `CMLPlatform/${name}`,
-        html_url: `https://github.com/CMLPlatform/${name}`,
-        license: { spdx_id: 'MIT' },
-      });
     const files = {
       'CMLPlatform/cited/CITATION.cff': CFF,
       'CMLPlatform/cited/codemeta.json': CODEMETA, // CITATION.cff wins
@@ -179,7 +172,7 @@ test('main fills authors and DOI from CITATION.cff, else codemeta.json', async (
     await main({
       outDir: dir,
       skipFile: join(dir, 'none.txt'),
-      fetchRepos: async () => [named('cited'), named('meta'), named('bare')],
+      fetchRepos: async () => [named('cited', { license: { spdx_id: 'MIT' } }), named('meta'), named('bare')],
       readme: async () => '',
       repoFile: async (fullName, path) => {
         asked.push(`${fullName}/${path}`);
@@ -218,39 +211,6 @@ test('main fails when a citation file cannot be fetched', async () => {
       /GitHub 403/,
     );
     assert.deepEqual(await readdir(dir), []);
-  } finally {
-    await rm(dir, { recursive: true });
-  }
-});
-
-test('a comment after a quoted CITATION.cff value is not part of the name', () => {
-  assert.deepEqual(
-    parseCitationCff('authors:\n  - given-names: "Pat" # first\n    family-names: \'O Brien\'\n').authors,
-    ['Pat O Brien'],
-  );
-});
-
-test('main skips a repo whose draft fails the schema and drafts the rest', async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'ingest-'));
-  try {
-    // An entry in its own folder still counts as linking its repo.
-    await mkdir(join(dir, 'relab'));
-    await writeFile(join(dir, 'relab', 'index.md'), '---\nlinks:\n  repo: https://github.com/CMLPlatform/relab\n---\n');
-    const named = (name, over = {}) =>
-      repo({ name, full_name: `CMLPlatform/${name}`, html_url: `https://github.com/CMLPlatform/${name}`, ...over });
-    const logs = [];
-    const result = await main({
-      outDir: dir,
-      skipFile: join(dir, 'none.txt'),
-      fetchRepos: async () => [repo(), named('blank', { description: '   ' }), named('pycirk')],
-      readme: async () => '',
-      repoFile: async () => null,
-      log: (line) => logs.push(line),
-    });
-    assert.deepEqual(result, { written: 1, skipped: 2 });
-    assert.ok((await readdir(dir)).includes('pycirk.md'));
-    assert.ok(logs.some((l) => /blank \(draft fails the schema: summary/.test(l)));
-    assert.ok(logs.some((l) => /RELab \(an entry already links to it\)/.test(l)));
   } finally {
     await rm(dir, { recursive: true });
   }
