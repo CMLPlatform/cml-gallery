@@ -1,8 +1,8 @@
 ---
 # SAMPLE ENTRY: included so the gallery renders out of the box.
 # Safe to delete once real projects are added. Based on public info about
-# RELab; trim or replace as needed.
-name: RELab
+# R9lab; trim or replace as needed.
+name: R9lab
 summary: Open platform for collecting and sharing product disassembly data to support circular-economy research.
 authors:
   - Simon van Lierde
@@ -14,11 +14,11 @@ tags:
   - disassembly
   - fair-data
 links:
-  repo: https://github.com/CMLPlatform
+  repo: https://github.com/CMLPlatform/r9lab
 featured: true
 ---
 
-RELab is an open web platform for recording how products come apart: component
+R9lab is an open web platform for recording how products come apart: component
 hierarchies, materials, fasteners, and the time and tools a disassembly takes.
 The goal is a shared, FAIR dataset that circular-economy and industrial-ecology
 researchers can reuse instead of each re-measuring the same devices.

@@ -20,11 +20,11 @@ import {
 } from './fetch-github-projects.mjs';
 
 const repo = (over = {}) => ({
-  name: 'RELab',
-  full_name: 'CMLPlatform/relab',
-  description: 'Reverse engineering lab',
+  name: 'R9lab',
+  full_name: 'CMLPlatform/r9lab',
+  description: 'Product disassembly data platform',
   topics: ['cml-showcase', 'fair'],
-  html_url: 'https://github.com/CMLPlatform/relab',
+  html_url: 'https://github.com/CMLPlatform/r9lab',
   homepage: '',
   ...over,
 });
@@ -33,7 +33,7 @@ const named = (name, over = {}) =>
 
 test('pure helpers', () => {
   assert.equal(slugify('Material Flow Explorer!'), 'material-flow-explorer');
-  assert.equal(slugify('--RELab--'), 'relab');
+  assert.equal(slugify('--R9lab--'), 'r9lab');
   assert.equal(truncate('hello world', 5), 'hell…');
   assert.equal(truncate('hi', 5), 'hi');
   assert.equal(
@@ -42,8 +42,8 @@ test('pure helpers', () => {
   );
   assert.deepEqual(parseSkipList('# c\nCMLPlatform/Old  # gone\n\n'), new Set(['cmlplatform/old']));
   assert.equal(
-    repoLinkOf('---\nname: x\nlinks:\n  repo: "https://github.com/CMLPlatform/relab/"\n---\n'),
-    'https://github.com/cmlplatform/relab',
+    repoLinkOf('---\nname: x\nlinks:\n  repo: "https://github.com/CMLPlatform/r9lab/"\n---\n'),
+    'https://github.com/cmlplatform/r9lab',
   );
   assert.equal(repoLinkOf('---\nname: x\n---\n'), null);
 });
@@ -79,10 +79,10 @@ test('main skips linked, listed, existing and invalid repos and writes the rest'
     const skipFile = join(dir, 'skip.txt');
     await writeFile(skipFile, 'CMLPlatform/declined\n');
     // Linked by URL under another file name, in its own folder, as the content glob allows.
-    await mkdir(join(dir, 'relab'));
+    await mkdir(join(dir, 'r9lab'));
     await writeFile(
-      join(dir, 'relab', 'index.md'),
-      '---\nlinks:\n  repo: https://github.com/cmlplatform/RELab\n---\n',
+      join(dir, 'r9lab', 'index.md'),
+      '---\nlinks:\n  repo: https://github.com/cmlplatform/R9lab\n---\n',
     );
     await writeFile(join(dir, 'taken.mdx'), 'hand-written');
     const logs = [];
@@ -101,7 +101,7 @@ test('main skips linked, listed, existing and invalid repos and writes the rest'
       log: (line) => logs.push(line),
     });
     assert.deepEqual(result, { written: 1, skipped: 4 });
-    assert.deepEqual((await readdir(dir)).sort(), ['pycirk.md', 'relab', 'skip.txt', 'taken.mdx']);
+    assert.deepEqual((await readdir(dir)).sort(), ['pycirk.md', 'r9lab', 'skip.txt', 'taken.mdx']);
     assert.ok(logs.some((l) => /blank \(draft fails the schema: summary/.test(l)));
     assert.equal(await readFile(join(dir, 'taken.mdx'), 'utf8'), 'hand-written');
     assert.match(await readFile(join(dir, 'pycirk.md'), 'utf8'), /Circular economy scenarios\./);
@@ -118,7 +118,7 @@ authors:
     name-particle: van
     affiliation: "CML, Leiden University"
   - name: "CML Leiden"
-title: RELab
+title: R9lab
 doi: 10.5281/zenodo.1234567 # concept DOI
 preferred-citation:
   type: article
