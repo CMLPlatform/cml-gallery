@@ -123,9 +123,10 @@ Safeguards:
 [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) runs this weekly
 (and on demand), runs `astro check` on the drafts, and opens a pull request
 with any new ones, so review happens through the same PR flow as everything
-else. That PR is opened with the workflow's own token, so CI does not run on it;
-the check inside the ingest job stands in for it. Delete that workflow for
-hand-curation only.
+else. That PR is opened with the workflow's own token, so CI does not run on it
+by itself. `main` requires the CI `check` to pass, so close and reopen the PR
+(or push a commit to its branch) to start CI before merging. Delete that
+workflow for hand-curation only.
 
 ## Context
 
