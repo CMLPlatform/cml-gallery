@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -218,6 +218,39 @@ test('main fails when a citation file cannot be fetched', async () => {
       /GitHub 403/,
     );
     assert.deepEqual(await readdir(dir), []);
+  } finally {
+    await rm(dir, { recursive: true });
+  }
+});
+
+test('a comment after a quoted CITATION.cff value is not part of the name', () => {
+  assert.deepEqual(
+    parseCitationCff('authors:\n  - given-names: "Pat" # first\n    family-names: \'O Brien\'\n').authors,
+    ['Pat O Brien'],
+  );
+});
+
+test('main skips a repo whose draft fails the schema and drafts the rest', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'ingest-'));
+  try {
+    // An entry in its own folder still counts as linking its repo.
+    await mkdir(join(dir, 'relab'));
+    await writeFile(join(dir, 'relab', 'index.md'), '---\nlinks:\n  repo: https://github.com/CMLPlatform/relab\n---\n');
+    const named = (name, over = {}) =>
+      repo({ name, full_name: `CMLPlatform/${name}`, html_url: `https://github.com/CMLPlatform/${name}`, ...over });
+    const logs = [];
+    const result = await main({
+      outDir: dir,
+      skipFile: join(dir, 'none.txt'),
+      fetchRepos: async () => [repo(), named('blank', { description: '   ' }), named('pycirk')],
+      readme: async () => '',
+      repoFile: async () => null,
+      log: (line) => logs.push(line),
+    });
+    assert.deepEqual(result, { written: 1, skipped: 2 });
+    assert.ok((await readdir(dir)).includes('pycirk.md'));
+    assert.ok(logs.some((l) => /blank \(draft fails the schema: summary/.test(l)));
+    assert.ok(logs.some((l) => /RELab \(an entry already links to it\)/.test(l)));
   } finally {
     await rm(dir, { recursive: true });
   }

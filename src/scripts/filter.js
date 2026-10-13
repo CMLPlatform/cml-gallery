@@ -17,12 +17,17 @@ const empty = document.getElementById('empty');
 
 const activeTags = new Set();
 
-// Restore the filters from the URL. A select keeps '' for a value it has no option for,
-// and a tag no button carries is dropped.
+// Restore the filters from the URL; a tag no button carries is dropped.
 const initial = readFilters(location.search);
 if (q) q.value = initial.q;
-if (dept) dept.value = initial.dept;
-if (type) type.value = initial.type;
+// A value with no option leaves the select blank (selectedIndex -1), so fall back to "all".
+function restoreSelect(select, value) {
+  if (!select) return;
+  select.value = value;
+  if (select.selectedIndex < 0) select.value = '';
+}
+restoreSelect(dept, initial.dept);
+restoreSelect(type, initial.type);
 for (const btn of tagButtons) {
   if (initial.tags.includes(btn.dataset.tag)) {
     activeTags.add(btn.dataset.tag);
@@ -47,7 +52,7 @@ function apply() {
     card.hidden = !show;
     if (show) shown++;
   }
-  history.replaceState(history.state, '', `${location.pathname}${filterQuery(filters)}${location.hash}`);
+  history.replaceState(history.state, '', `${location.pathname}${filterQuery(filters, location.search)}${location.hash}`);
 
   if (resultLine) {
     resultLine.textContent = `${shown} of ${cards.length} shown`;

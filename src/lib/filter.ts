@@ -37,9 +37,13 @@ export function readFilters(search: string): Filters {
   };
 }
 
-/** The query string for a set of filters: empty ones are left out, and '' when none is set. */
-export function filterQuery({ q, dept, type, tags }: Filters): string {
-  const p = new URLSearchParams();
+/**
+ * The query string for a set of filters: empty ones are left out, and '' when nothing is set.
+ * Parameters in `keep` that are not filters (a utm tag, say) are carried over.
+ */
+export function filterQuery({ q, dept, type, tags }: Filters, keep = ''): string {
+  const p = new URLSearchParams(keep);
+  for (const key of ['q', 'dept', 'type', 'tags']) p.delete(key);
   if (q.trim()) p.set('q', q.trim());
   if (dept) p.set('dept', dept);
   if (type) p.set('type', type);

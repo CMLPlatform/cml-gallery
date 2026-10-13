@@ -102,7 +102,8 @@ export function parseCitationCff(text) {
   // parser; flow-style `authors: [...]` and a DOI only under `identifiers:` are missed.
   const scalar = (v) => {
     const s = v.trim();
-    const quoted = /^(["'])(.*)\1$/.exec(s);
+    // A trailing comment can follow a quoted value too: `given-names: "Pat" # first`.
+    const quoted = /^(["'])(.*?)\1\s*(#.*)?$/.exec(s);
     return quoted ? quoted[2] : s.replace(/\s+#.*$/, '');
   };
   const authors = [];
@@ -280,7 +281,8 @@ async function citationMeta(fullName, repoFile) {
 
 /** Repo URLs that existing entries (published, draft or template) already link to. */
 async function linkedRepos(outDir) {
-  const files = await readdir(outDir).catch(() => []);
+  // Recursive, like the content glob: an entry may live in its own folder (my-project/index.md).
+  const files = await readdir(outDir, { recursive: true }).catch(() => []);
   const urls = new Set();
   for (const f of files.filter((f) => /\.mdx?$/.test(f))) {
     const url = repoLinkOf(await readFile(join(outDir, f), 'utf8'));
@@ -318,11 +320,20 @@ export async function main({
       skipped++;
       continue;
     }
-    const contents = toEntryFile(
-      repo,
-      readmeExcerpt(await readme(repo.full_name)),
-      await citationMeta(repo.full_name, repoFile),
-    );
+    let contents;
+    try {
+      contents = toEntryFile(
+        repo,
+        readmeExcerpt(await readme(repo.full_name)),
+        await citationMeta(repo.full_name, repoFile),
+      );
+    } catch (err) {
+      if (!err?.issues) throw err; // only a schema failure is this repo's problem
+      // One repo with odd metadata must not cost the PR for the others.
+      log(`  skip  ${repo.name} (draft fails the schema: ${err.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')})`);
+      skipped++;
+      continue;
+    }
     if (dryRun) {
       log(`\n─── would write ${file} ───\n${contents}`);
     } else {

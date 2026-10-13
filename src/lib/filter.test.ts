@@ -32,3 +32,11 @@ test('filters round-trip through the query string', () => {
   // biome-ignore lint/security/noSecrets: a query string, not a secret
   assert.deepEqual(readFilters('?q=a%2Cb&tags=x%2Cy'), { ...none, q: 'a,b', tags: ['x', 'y'] });
 });
+
+test('filterQuery keeps parameters that are not filters', () => {
+  // biome-ignore lint/security/noSecrets: a query string, not a secret
+  const keep = '?utm_source=x&type=model&tags=a';
+  // biome-ignore lint/security/noSecrets: a query string, not a secret
+  const want = '?utm_source=x&type=data';
+  assert.equal(filterQuery({ q: '', dept: '', type: 'data', tags: [] }, keep), want);
+});
