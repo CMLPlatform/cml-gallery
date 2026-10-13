@@ -23,7 +23,7 @@ code. The site stays low-maintenance, and every change goes through normal Git
 review.
 
 The file *is* the contract: each entry is validated at build time against a typed
-schema ([`src/content.config.ts`](src/content.config.ts)), so a malformed entry
+schema ([`src/lib/entry.ts`](src/lib/entry.ts)), so a malformed entry
 fails the build with a clear message instead of shipping a broken card.
 
 ## Add a project
@@ -33,7 +33,8 @@ Full instructions: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ## Run locally
 
-Requires **Node 22.12+** (Astro 7).
+Requires **Node 24+**: the tests and the ingest script import TypeScript
+directly, which Node 22.12 cannot do without a flag. CI runs Node 26.
 
 ```bash
 npm install
@@ -48,7 +49,7 @@ npm test         # unit tests
 
 | Path | What it is |
 | ---- | ---------- |
-| [`src/content.config.ts`](src/content.config.ts) | The Zod schema — the ingestion contract. |
+| [`src/lib/entry.ts`](src/lib/entry.ts) | The Zod schema — the ingestion contract, shared by the site and the ingest script. |
 | [`src/content/projects/`](src/content/projects/) | One Markdown file per project. `_TEMPLATE.md` is the template. |
 | [`src/pages/index.astro`](src/pages/index.astro) | Landing page: searchable, filterable project list. |
 | [`src/pages/projects/[slug].astro`](src/pages/projects/) | Per-project detail page. |
@@ -86,7 +87,7 @@ For Cloudflare Pages instead: build command `npm run build`, output directory
 ## Optional: automated ingestion
 
 Hand-authored entries are the primary path. As an **optional** supplement, a
-build-time script can surface repositories automatically:
+separate script can surface repositories automatically:
 
 ```bash
 npm run ingest                                   # write new drafts
@@ -98,19 +99,25 @@ public repositories in the `CMLPlatform` org that carry the **`cml-showcase`**
 topic and writes one draft entry per repo, derived from its description,
 homepage, topics, and README excerpt.
 
-Two safeguards:
+Safeguards:
 
 - Every generated entry gets **`draft: true`**, so it is **excluded from the
   built site** until a maintainer reviews it, fills in the TODO fields
-  (`department`, `authors`), and removes the flag.
-- **Existing files are never overwritten:** a repo is skipped if `<repo-name>.md`
-  already exists. This is also why a promoted draft should keep its filename —
-  rename it, and the next run re-drafts that repo. The duplicate arrives as a
-  draft for review, so no harm done, but it is noise.
+  (`department`, `authors`), and removes the flag. Each draft is checked
+  against the site's schema before it is written, and the schema refuses an
+  entry that still has a `TODO` author, name, summary or tag once `draft: true`
+  is gone.
+- **Nothing is drafted twice or overwritten:** a repo is skipped when an
+  existing entry already links to it in `links.repo` (whatever the file is
+  called), when `<repo-name>.md` or `.mdx` already exists, or when it is listed
+  in [`scripts/ingest-skip.txt`](scripts/ingest-skip.txt). Add a repo there to
+  decline it for good; closing its draft PR alone does not stop the next run.
 
 [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) runs this weekly
-(and on demand) and opens a pull request with any new drafts, so review happens
-through the same PR flow as everything else. Delete that workflow for
+(and on demand), runs `astro check` on the drafts, and opens a pull request
+with any new ones, so review happens through the same PR flow as everything
+else. That PR is opened with the workflow's own token, so CI does not run on it;
+the check inside the ingest job stands in for it. Delete that workflow for
 hand-curation only.
 
 ## Context

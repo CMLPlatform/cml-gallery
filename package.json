@@ -15,8 +15,8 @@
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "test": "node --test 'src/**/*.test.ts'",
-    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts'",
+    "test": "node --test 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
     "ingest": "node scripts/fetch-github-projects.mjs"
   },
   "dependencies": {

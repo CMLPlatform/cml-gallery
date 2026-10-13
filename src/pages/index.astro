@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import FilterBar from "../components/FilterBar.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import { DEPARTMENTS, PROJECT_TYPES } from "../content.config";
+import { DEPARTMENTS, PROJECT_TYPES } from "../lib/entry.ts";
 
 const projects = (
   await getCollection("projects", ({ data }) => !data.draft)

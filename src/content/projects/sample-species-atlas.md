@@ -4,7 +4,7 @@
 name: Sample Species Occurrence Atlas
 summary: Illustrative open dataset of species occurrence records for a fictional monitoring region.
 authors:
-  - TODO Real Author
+  - Placeholder Author
 department: Environmental Biology
 type: data
 tags:

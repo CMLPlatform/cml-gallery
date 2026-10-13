@@ -25,9 +25,14 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 26
+          cache: npm
+      # The fetcher validates drafts with the site's schema, so it needs the dependencies.
+      - run: npm ci
       - run: node scripts/fetch-github-projects.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # A PR opened with GITHUB_TOKEN triggers no CI, so check the drafts here.
+      - run: npm run check
       - uses: peter-evans/create-pull-request@v8
         with:
           branch: auto/ingest-showcase
@@ -37,5 +42,7 @@ jobs:
             Auto-generated **draft** entries from repositories tagged `cml-showcase`.
 
             Each needs review before it goes live: set `department`, add `authors`,
-            check `type`, then remove `draft: true`. Close this PR to discard.
+            check `type`, then remove `draft: true`. To discard a repo for good, add it
+            to `scripts/ingest-skip.txt`; closing this PR alone does not stop next
+            week's run from drafting it again.
           labels: ingestion, draft

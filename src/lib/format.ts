@@ -1,11 +1,14 @@
 // Small shared helpers for presenting project entries.
 
-const DEPT_COLOR: Record<string, string> = {
+import type { Department } from './entry.ts';
+
+// Typed by Department, so adding a department without a colour fails `astro check`.
+const DEPT_COLOR: Record<Department, string> = {
   'Industrial Ecology': 'var(--dept-ie)',
   'Environmental Biology': 'var(--dept-eb)',
 };
 
-export const deptColor = (dept: string) => DEPT_COLOR[dept] ?? 'var(--ink-soft)';
+export const deptColor = (dept: string) => DEPT_COLOR[dept as Department] ?? 'var(--ink-soft)';
 
 // Okabe-Ito hues used for tags. Colour is deterministic per tag but always
 // paired with the tag's text, so it's never the only signal (colourblind-safe).
