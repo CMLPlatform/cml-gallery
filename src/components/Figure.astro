@@ -3,19 +3,22 @@
  * A captioned, lazy-loaded image for project `.mdx` entries. Use for static
  * charts, diagrams, or screenshots. Available without an import:
  *
- *   <Figure src="./results.svg" alt="Bar chart of yields" caption="Fig 1. Yields by scenario." />
+ *   <Figure src="/images/my-project/results.svg" alt="Bar chart of yields" caption="Fig 1. Yields by scenario." />
  *
- * `alt` is required. `src` may be a remote URL or a path under /public.
+ * `alt` is required. `src` may be a remote URL or a path under /public
+ * (`/images/…`), which gets the site's base path.
  */
 interface Props {
   src: string;
   alt: string;
   caption?: string;
 }
+import { asset } from '../lib/format';
+
 const { src, alt, caption } = Astro.props;
 ---
 
 <figure class="figure">
-  <img src={src} alt={alt} loading="lazy" decoding="async" />
+  <img src={asset(src)} alt={alt} loading="lazy" decoding="async" />
   {caption && <figcaption>{caption}</figcaption>}
 </figure>

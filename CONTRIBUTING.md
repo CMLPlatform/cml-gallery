@@ -52,10 +52,14 @@ flow is: **copy the template, fill it in, open a pull request.**
 
 ## Adding a picture, chart, or interactive element
 
-- **A picture or static chart** works in any entry: use standard Markdown
-  (`![describe the image](/images/my-project/chart.png)`) or set `links.image`
-  for the card/detail preview. Put image files under `public/images/`. Images
-  are lazy-loaded automatically.
+- **A picture or static chart** works in any entry. In the Markdown text, put
+  the file next to your entry and link it relatively
+  (`![describe the image](./my-project/chart.png)` for
+  `src/content/projects/my-project/chart.png`); the site resizes it for you.
+  For the card/detail preview (`links.image`) or a `<Figure>`, put the file
+  under `public/images/` and write `/images/my-project/chart.png`. A path
+  starting with `/` only works in those two places: in Markdown text it would
+  point outside the gallery. Images are lazy-loaded automatically.
 
 - **An interactive chart, notebook, video, or dashboard** should stay hosted
   where it's maintained (your app, an Observable notebook, YouTube…) and be

@@ -34,3 +34,6 @@ const LEADING_SLASH = /^\//;
 const REPEATED_SLASHES = /\/{2,}/g;
 export const href = (path: string) =>
   (import.meta.env.BASE_URL + path.replace(LEADING_SLASH, '')).replace(REPEATED_SLASHES, '/');
+
+// An image `src` from an entry: a `/images/…` path gets the base, a full URL stays as it is.
+export const asset = (src: string) => (src.startsWith('/') && !src.startsWith('//') ? href(src) : src);

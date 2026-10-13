@@ -25,6 +25,7 @@
   --ink: #1c211d; /* green-black */
   --ink-soft: #616b64;
   --line: #c9cec6; /* structural rules */
+  --field-edge: #858e87; /* control borders: 3:1 on --surface (WCAG 1.4.11) */
   --rule: #d7dbd3; /* lighter per-row rule */
 
   --green: #0a6b46; /* botanical green, the single accent */
@@ -34,14 +35,15 @@
   --dept-ie: #445b6b; /* Industrial Ecology, slate */
   --dept-eb: #0a6b46; /* Environmental Biology, green */
 
-  /* Okabe-Ito hues, tuned to pass AA as tag text on a light tint. */
-  --ok-orange: #b06f00;
-  --ok-sky: #1f76a8;
-  --ok-green: #00795c;
-  --ok-yellow: #8a6d00;
+  /* Okabe-Ito hues, darkened to pass AA (4.5:1) as tag text on their own 8% tint
+     over --paper and --surface. */
+  --ok-orange: #8a5700;
+  --ok-sky: #1b6895;
+  --ok-green: #006f54;
+  --ok-yellow: #785f00;
   --ok-blue: #0060a0;
-  --ok-vermillion: #c1440e;
-  --ok-purple: #a24d80;
+  --ok-vermillion: #ae3d0d;
+  --ok-purple: #964776;
 
   --font-display: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
   --font-body: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
@@ -59,6 +61,7 @@
     --ink: #e7ece8;
     --ink-soft: #9aa8a2;
     --line: #2c3538;
+    --field-edge: #6b7872;
     --rule: #222a2d;
 
     --green: #3fbf8a;
@@ -307,7 +310,7 @@ a:hover {
   font-size: 0.84rem;
   color: var(--ink);
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--field-edge);
   border-radius: var(--radius);
   padding: 0.44rem 0.6rem;
   flex: 1;
@@ -350,9 +353,9 @@ a:hover {
   font-size: 0.74rem;
   color: var(--ink-soft);
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid var(--field-edge);
   border-radius: 999px;
-  padding: 0.15rem 0.65rem;
+  padding: 0.3rem 0.65rem; /* at least 24px tall (WCAG 2.5.8) */
   cursor: pointer;
 }
 .tagfilter button:hover {
@@ -535,6 +538,7 @@ a:hover {
   color: var(--ink-soft);
   padding: 1.1rem 0.4rem 0;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: a different element from .row-name a */
 .register-note a {
   color: var(--green);
 }
@@ -605,6 +609,7 @@ a:hover {
   padding: 1.2rem 0;
   margin-bottom: 1.5rem;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: .hero .tally dt is a different list */
 .meta dt {
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -613,6 +618,7 @@ a:hover {
   color: var(--ink-soft);
   margin-bottom: 0.25rem;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: .hero .tally dd is a different list */
 .meta dd {
   margin: 0;
   font-size: 0.95rem;
@@ -629,6 +635,7 @@ a:hover {
   gap: 0.6rem;
   margin-bottom: 2rem;
 }
+/* biome-ignore lint/style/noDescendingSpecificity: a different element from .row-name a */
 .linkrow a {
   font-family: var(--font-mono);
   font-size: 0.85rem;

@@ -8,6 +8,8 @@ interface Props {
 const { departments, types, tags, contribute } = Astro.props;
 ---
 
+<!-- The controls need filter.js; without JavaScript the full list shows and they would do nothing. -->
+<noscript><style>.console { display: none; }</style></noscript>
 <section class="console" aria-label="Filter the gallery">
   <div class="wrap">
     <div class="console-grid">

@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Tag from '../../components/Tag.astro';
 import Embed from '../../components/Embed.astro';
 import Figure from '../../components/Figure.astro';
-import { deptColor, href } from '../../lib/format';
+import { asset, deptColor, href } from '../../lib/format';
 
 export async function getStaticPaths() {
   const entries = await getCollection('projects', (entry) => !entry.data.draft);
@@ -35,7 +35,7 @@ const links = [
 
     {
       data.links.image && (
-        <img class="detail-media" src={data.links.image} alt="" loading="lazy" decoding="async" />
+        <img class="detail-media" src={asset(data.links.image)} alt="" loading="lazy" decoding="async" />
       )
     }
 

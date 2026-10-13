@@ -15,6 +15,9 @@ export const SUMMARY_MAX = 160;
 
 export type Department = (typeof DEPARTMENTS)[number];
 
+// Links render as clickable hrefs, so only web URLs: `javascript:` and `data:` would pass z.url().
+const webUrl = z.url({ protocol: /^https?$/ });
+
 // The ingest script fills unknown fields with "TODO …"; a published entry must not keep one.
 const TODO = /^\s*TODO\b/i;
 
@@ -40,10 +43,10 @@ export const entrySchema = z
     // (https://doi.org/…). `image` may be a remote URL or a path under /public.
     links: z
       .object({
-        repo: z.url().optional(),
-        demo: z.url().optional(),
-        docs: z.url().optional(),
-        paper: z.url().optional(),
+        repo: webUrl.optional(),
+        demo: webUrl.optional(),
+        docs: webUrl.optional(),
+        paper: webUrl.optional(),
         image: z.string().optional(),
       })
       .default({}),
