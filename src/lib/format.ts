@@ -1,11 +1,14 @@
 // Small shared helpers for presenting project entries.
 
-const DEPT_COLOR: Record<string, string> = {
+import type { Department } from './entry.ts';
+
+// Typed by Department, so adding a department without a colour fails `astro check`.
+const DEPT_COLOR: Record<Department, string> = {
   'Industrial Ecology': 'var(--dept-ie)',
   'Environmental Biology': 'var(--dept-eb)',
 };
 
-export const deptColor = (dept: string) => DEPT_COLOR[dept] ?? 'var(--ink-soft)';
+export const deptColor = (dept: string) => DEPT_COLOR[dept as Department] ?? 'var(--ink-soft)';
 
 // Okabe-Ito hues used for tags. Colour is deterministic per tag but always
 // paired with the tag's text, so it's never the only signal (colourblind-safe).
@@ -31,3 +34,6 @@ const LEADING_SLASH = /^\//;
 const REPEATED_SLASHES = /\/{2,}/g;
 export const href = (path: string) =>
   (import.meta.env.BASE_URL + path.replace(LEADING_SLASH, '')).replace(REPEATED_SLASHES, '/');
+
+// An image `src` from an entry: a `/images/…` path gets the base, a full URL stays as it is.
+export const asset = (src: string) => (src.startsWith('/') && !src.startsWith('//') ? href(src) : src);

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { deptColor, tagColor } from './format.ts';
 
+const HUE_VAR = /^var\(--ok-[a-z]+\)$/;
+
 // NOTE: covers the pure helpers. `href` reads import.meta.env, which needs
 // the Astro runtime, so it's left to `astro build` rather than a node test.
 
@@ -14,5 +16,5 @@ test('deptColor maps known departments, falls back for unknown', () => {
 test('tagColor is deterministic and stays within the hue palette', () => {
   const a = tagColor('circular-economy');
   assert.equal(a, tagColor('circular-economy'));
-  assert.match(a, /^var\(--ok-[a-z]+\)$/);
+  assert.match(a, HUE_VAR);
 });

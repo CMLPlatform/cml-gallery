@@ -4,32 +4,41 @@
  *
  * Fetches public repositories in the CMLPlatform GitHub org that carry the
  * `cml-showcase` topic and writes a DRAFT gallery entry for each one, derived
- * from the repo's metadata (description, homepage, topics, README excerpt).
+ * from the repo's metadata (description, homepage, topics, licence, README
+ * excerpt). When the repo has a CITATION.cff, or else a codemeta.json, its
+ * authors and DOI fill the draft's `authors` and `doi`.
  *
  * Drafts are written with `draft: true`, so they're excluded from the built
  * site until a maintainer reviews one, fills the TODO fields (department,
- * authors), and removes the flag. Existing files are NEVER overwritten, so
- * hand-authored and already-promoted entries are safe.
+ * and authors when no citation file named them), and removes the flag. Each
+ * draft is checked against the same schema the site builds with before it is
+ * written.
+ *
+ * A repo is skipped when an existing entry already links to it
+ * (`links.repo`), when a file of the same name exists (files are NEVER
+ * overwritten), or when it is listed in `scripts/ingest-skip.txt`.
  *
  *   node scripts/fetch-github-projects.mjs            # write new drafts
  *   node scripts/fetch-github-projects.mjs --dry-run  # show what it would write
- *   node scripts/fetch-github-projects.mjs --selftest # run the helper asserts
  *
  * Set GITHUB_TOKEN in the environment for a higher API rate limit (optional).
  */
 
-import { writeFile, mkdir, access } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { writeFile, mkdir, readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
-import assert from 'node:assert/strict';
+import { parse as parseYaml } from 'yaml';
+import { entrySchema, SUMMARY_MAX } from '../src/lib/entry.ts';
 
 const ORG = 'CMLPlatform';
 const TOPIC = 'cml-showcase';
-const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'content', 'projects');
-const SUMMARY_MAX = 160; // must match the schema
+const HERE = dirname(fileURLToPath(import.meta.url));
+const OUT_DIR = join(HERE, '..', 'src', 'content', 'projects');
+const SKIP_FILE = join(HERE, 'ingest-skip.txt');
 const EXCERPT_MAX = 600;
 
-// ── pure helpers (covered by --selftest) ────────────────────────────────────
+// ── pure helpers ────────────────────────────────────────────────────────────
 
 export function slugify(name) {
   return String(name)
@@ -62,6 +71,71 @@ export function readmeExcerpt(md) {
   return truncate(para.join(' ').replace(/\s+/g, ' '), EXCERPT_MAX);
 }
 
+/** Compare repo URLs loosely: case, trailing slash and `.git` don't matter. */
+export function normRepoUrl(url) {
+  return String(url).trim().toLowerCase().replace(/\.git$/, '').replace(/\/+$/, '');
+}
+
+/** The `links.repo` URL in an entry file's frontmatter, if any. */
+export function repoLinkOf(fileText) {
+  const front = /^---\n([\s\S]*?)\n---/.exec(fileText)?.[1] ?? '';
+  // shortcut: a line regex, not a YAML parser; enough for the flat `links:` block entries use.
+  const m = /^\s+repo:\s*["']?([^"'\s#]+)/m.exec(front);
+  return m ? normRepoUrl(m[1]) : null;
+}
+
+/** Repo full names (owner/name) in the skip list: one per line, `#` comments. */
+export function parseSkipList(text) {
+  return new Set(
+    String(text)
+      .split('\n')
+      .map((l) => l.replace(/#.*/, '').trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+/** The bare DOI (`10.…/…`) in a string such as `https://doi.org/10.5281/zenodo.1`, if any. */
+export function bareDoi(text) {
+  return /\b(10\.\d{4,9}\/[^\s"'<>]+)/.exec(String(text ?? ''))?.[1];
+}
+
+/** Authors and DOI from a CITATION.cff: `authors:` names and the top-level `doi:`. */
+export function parseCitationCff(text) {
+  let cff;
+  try {
+    cff = parseYaml(text);
+  } catch {
+    return { authors: [] }; // a broken file leaves the TODO placeholder for a maintainer
+  }
+  const authors = [cff?.authors ?? []]
+    .flat()
+    .map((p) =>
+      p?.name ??
+      [p?.['given-names'], p?.['name-particle'], p?.['family-names'], p?.['name-suffix']].filter(Boolean).join(' '),
+    )
+    .filter(Boolean);
+  return { authors, doi: bareDoi(cff?.doi) };
+}
+
+/** Authors and DOI from a codemeta.json (`author`, and `identifier` or `@id`). */
+export function parseCodemeta(text) {
+  let meta;
+  try {
+    meta = JSON.parse(text);
+  } catch {
+    return { authors: [] }; // a broken file leaves the TODO placeholder for a maintainer
+  }
+  const authors = [meta.author ?? []]
+    .flat()
+    .map((a) => (typeof a === 'string' ? a : (a.name ?? [a.givenName, a.familyName].filter(Boolean).join(' '))))
+    .filter(Boolean);
+  const doi = [meta.identifier, meta['@id']]
+    .flat()
+    .map((id) => bareDoi(typeof id === 'object' ? id?.value : id))
+    .find(Boolean);
+  return { authors, doi };
+}
+
 /** Serialise a value as a YAML scalar/array (double-quoted strings are safe). */
 function yamlValue(v) {
   if (Array.isArray(v)) {
@@ -72,25 +146,39 @@ function yamlValue(v) {
   return JSON.stringify(String(v));
 }
 
-export function toEntryFile(repo, excerpt) {
-  const tags = (repo.topics || []).filter((t) => t !== TOPIC).slice(0, 8);
+/**
+ * The draft entry's frontmatter fields, validated against the site's schema.
+ * `meta` holds the authors and DOI read from the repo's citation file, if any.
+ */
+export function toEntryFields(repo, meta = {}) {
   const fields = {
     name: repo.name,
     summary: truncate(repo.description || repo.name, SUMMARY_MAX),
-    authors: ['TODO: add author(s)'],
+    authors: meta.authors?.length ? meta.authors : ['TODO: add author(s)'],
     department: 'Industrial Ecology', // TODO: verify (schema needs a valid value)
     type: 'software', // TODO: verify (software | data | model | other)
-    tags,
+    tags: (repo.topics || []).filter((t) => t !== TOPIC).slice(0, 8),
     links: {},
+    draft: true,
   };
+  // GitHub reports NOASSERTION for a licence file it cannot match to one SPDX id.
+  const spdx = repo.license?.spdx_id;
+  if (spdx && spdx !== 'NOASSERTION') fields.license = spdx;
+  if (meta.doi) fields.doi = meta.doi;
   if (repo.html_url) fields.links.repo = repo.html_url;
-  if (repo.homepage) fields.links.demo = repo.homepage;
+  // GitHub lets owners type a homepage without a scheme; the schema needs a full URL.
+  if (/^https?:\/\//i.test(repo.homepage || '')) fields.links.demo = repo.homepage;
+  entrySchema.parse(fields);
+  return fields;
+}
 
+export function toEntryFile(repo, excerpt, meta) {
+  const fields = toEntryFields(repo, meta);
   const lines = [
     '---',
     '# ─────────────────────────────────────────────────────────────',
     `# AUTO-GENERATED DRAFT from ${repo.full_name}: review before publishing.`,
-    '# Fill in `department` and `authors`, then remove `draft: true`.',
+    '# Fill in or check `department` and `authors`, then remove `draft: true`.',
     '# ─────────────────────────────────────────────────────────────',
     `name: ${yamlValue(fields.name)}`,
     `summary: ${yamlValue(fields.summary)}`,
@@ -98,6 +186,7 @@ export function toEntryFile(repo, excerpt) {
     `department: ${yamlValue(fields.department)}`,
     `type: ${yamlValue(fields.type)}`,
     `tags:${yamlValue(fields.tags)}`,
+    ...['license', 'doi'].filter((k) => fields[k]).map((k) => `${k}: ${yamlValue(fields[k])}`),
     'links:',
     ...Object.entries(fields.links).map(([k, v]) => `  ${k}: ${yamlValue(v)}`),
     'draft: true',
@@ -115,67 +204,119 @@ async function gh(path, accept = 'application/vnd.github+json') {
   const headers = { Accept: accept, 'User-Agent': 'cml-gallery-ingest' };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   const res = await fetch(`https://api.github.com${path}`, { headers });
-  if (!res.ok) throw new Error(`GitHub ${res.status} for ${path}: ${await res.text()}`);
+  if (!res.ok) {
+    const err = new Error(`GitHub ${res.status} for ${path}: ${await res.text()}`);
+    err.status = res.status;
+    throw err;
+  }
   return accept.includes('raw') ? res.text() : res.json();
 }
 
-async function exists(p) {
-  return access(p).then(() => true).catch(() => false);
+/** The awaited value, or null when GitHub answers 404 (absent). Any other error is rethrown. */
+export async function absentOn404(promise) {
+  try {
+    return await promise;
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err; // rate limit or outage: fail the run rather than write a draft missing data
+  }
 }
 
-async function main() {
-  const dryRun = process.argv.includes('--dry-run');
-  const search = await gh(`/search/repositories?q=org:${ORG}+topic:${TOPIC}&per_page=100`);
-  const repos = search.items || [];
-  console.log(`Found ${repos.length} repo(s) tagged "${TOPIC}" in ${ORG}.`);
+const github = {
+  async fetchRepos() {
+    const search = await gh(`/search/repositories?q=org:${ORG}+topic:${TOPIC}&per_page=100`);
+    return search.items || [];
+  },
+  async readme(fullName) {
+    return (await absentOn404(gh(`/repos/${fullName}/readme`, 'application/vnd.github.raw+json'))) ?? '';
+  },
+  /** A file's text from the repo's default branch, or null when it does not exist. */
+  repoFile(fullName, path) {
+    return absentOn404(gh(`/repos/${fullName}/contents/${path}`, 'application/vnd.github.raw+json'));
+  },
+};
+
+/** Authors and DOI from CITATION.cff, or from codemeta.json when there is no CITATION.cff. */
+async function citationMeta(fullName, repoFile) {
+  const cff = await repoFile(fullName, 'CITATION.cff');
+  if (cff !== null) return parseCitationCff(cff);
+  const codemeta = await repoFile(fullName, 'codemeta.json');
+  return codemeta !== null ? parseCodemeta(codemeta) : {};
+}
+
+/** Repo URLs that existing entries (published, draft or template) already link to. */
+async function linkedRepos(outDir) {
+  // Recursive, like the content glob: an entry may live in its own folder (my-project/index.md).
+  const files = await readdir(outDir, { recursive: true }).catch(() => []);
+  const urls = new Set();
+  for (const f of files.filter((f) => /\.mdx?$/.test(f))) {
+    const url = repoLinkOf(await readFile(join(outDir, f), 'utf8'));
+    if (url) urls.add(url);
+  }
+  return urls;
+}
+
+export async function main({
+  outDir = OUT_DIR,
+  skipFile = SKIP_FILE,
+  dryRun = false,
+  fetchRepos = github.fetchRepos,
+  readme = github.readme,
+  repoFile = github.repoFile,
+  log = console.log,
+} = {}) {
+  const repos = await fetchRepos();
+  log(`Found ${repos.length} repo(s) tagged "${TOPIC}" in ${ORG}.`);
+  const linked = await linkedRepos(outDir);
+  const skipList = parseSkipList(await readFile(skipFile, 'utf8').catch(() => ''));
 
   let written = 0, skipped = 0;
   for (const repo of repos) {
-    const file = join(OUT_DIR, `${slugify(repo.name)}.md`);
-    if (await exists(file)) {
-      console.log(`  skip  ${repo.name} (entry already exists, not overwritten)`);
+    const file = join(outDir, `${slugify(repo.name)}.md`);
+    const reason = skipList.has(repo.full_name.toLowerCase())
+      ? 'listed in ingest-skip.txt'
+      : linked.has(normRepoUrl(repo.html_url))
+        ? 'an entry already links to it'
+        : existsSync(file) || existsSync(`${file}x`)
+          ? 'a file of that name exists, not overwritten'
+          : null;
+    if (reason) {
+      log(`  skip  ${repo.name} (${reason})`);
       skipped++;
       continue;
     }
-    let excerpt = '';
+    let contents;
     try {
-      excerpt = readmeExcerpt(await gh(`/repos/${repo.full_name}/readme`, 'application/vnd.github.raw+json'));
-    } catch {
-      /* no README, leave excerpt empty */
+      contents = toEntryFile(
+        repo,
+        readmeExcerpt(await readme(repo.full_name)),
+        await citationMeta(repo.full_name, repoFile),
+      );
+    } catch (err) {
+      if (!err?.issues) throw err; // only a schema failure is this repo's problem
+      // One repo with odd metadata must not cost the PR for the others.
+      log(`  skip  ${repo.name} (draft fails the schema: ${err.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')})`);
+      skipped++;
+      continue;
     }
-    const contents = toEntryFile(repo, excerpt);
     if (dryRun) {
-      console.log(`\n─── would write ${file} ───\n${contents}`);
+      log(`\n─── would write ${file} ───\n${contents}`);
     } else {
-      await mkdir(OUT_DIR, { recursive: true });
+      await mkdir(outDir, { recursive: true });
       await writeFile(file, contents);
-      console.log(`  draft ${repo.name} → ${file}`);
+      log(`  draft ${repo.name} → ${file}`);
     }
     written++;
   }
-  console.log(`\n${dryRun ? '[dry-run] ' : ''}${written} draft(s) ${dryRun ? 'to write' : 'written'}, ${skipped} skipped.`);
-}
-
-function selftest() {
-  assert.equal(slugify('Material Flow Explorer!'), 'material-flow-explorer');
-  assert.equal(slugify('--RELab--'), 'relab');
-  assert.equal(truncate('hello world', 5), 'hell…');
-  assert.equal(truncate('hi', 5), 'hi');
-  assert.equal(
-    readmeExcerpt('# Title\n\n![badge](x.png)\n\n```\ncode\n```\n\nReal text here.\n\nSecond para.'),
-    'Real text here.',
-  );
-  const file = toEntryFile(
-    { name: 'RELab', full_name: 'CMLPlatform/relab', description: 'x', topics: ['cml-showcase', 'fair'], html_url: 'https://h', homepage: '' },
-    'body',
-  );
-  assert.match(file, /draft: true/);
-  assert.match(file, /"fair"/);
-  assert.doesNotMatch(file, /cml-showcase/); // the marker topic is stripped from tags
-  console.log('selftest: all asserts passed');
+  log(`\n${dryRun ? '[dry-run] ' : ''}${written} draft(s) ${dryRun ? 'to write' : 'written'}, ${skipped} skipped.`);
+  return { written, skipped };
 }
 
 // Only act when run directly (`node …` / npm run ingest), not when imported.
 const runDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (process.argv.includes('--selftest')) selftest();
-else if (runDirectly) main().catch((err) => { console.error(err.message); process.exit(1); });
+if (runDirectly) {
+  main({ dryRun: process.argv.includes('--dry-run') }).catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

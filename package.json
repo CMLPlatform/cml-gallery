@@ -15,8 +15,9 @@
     "lint:fix": "biome lint --write .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "test": "node --test 'src/**/*.test.ts'",
-    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts'",
+    "test": "node --test 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
+    "test:a11y": "node scripts/a11y.mjs",
     "ingest": "node scripts/fetch-github-projects.mjs"
   },
   "dependencies": {
@@ -28,9 +29,12 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.5.15",
     "@types/node": "^26.6.4",
     "lefthook": "^2.1.17",
-    "typescript": "^6.0.3"
+    "playwright": "^1.64.0",
+    "typescript": "^6.0.3",
+    "yaml": "^2.9.0"
   }
 }

@@ -1,0 +1,3 @@
+# Repos the weekly ingest should never draft, as owner/name, one per line.
+# Add a repo here when you close its draft PR for good: closing the PR alone
+# does not stop next week's run from drafting it again.

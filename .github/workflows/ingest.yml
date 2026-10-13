@@ -13,22 +13,49 @@ on:
   schedule:
     - cron: '0 6 * * 1' # Mondays 06:00 UTC
 
-permissions:
-  contents: write
-  pull-requests: write
+# The job that installs and runs npm packages gets a read-only token; only the
+# job that opens the PR can write, and it runs no project code.
+permissions: {}
 
 jobs:
-  ingest:
+  draft:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 26
+          cache: npm
+      # The fetcher validates drafts with the site's schema, so it needs the dependencies.
+      - run: npm ci
       - run: node scripts/fetch-github-projects.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: peter-evans/create-pull-request@v8
+      # A PR opened with GITHUB_TOKEN triggers no CI, so check the drafts here.
+      - run: npm run check
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: drafts
+          path: src/content/projects/
+          retention-days: 1
+
+  pull-request:
+    needs: draft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: drafts
+          path: src/content/projects/
+      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: auto/ingest-showcase
           title: 'chore: draft entries from cml-showcase repos'
@@ -37,5 +64,7 @@ jobs:
             Auto-generated **draft** entries from repositories tagged `cml-showcase`.
 
             Each needs review before it goes live: set `department`, add `authors`,
-            check `type`, then remove `draft: true`. Close this PR to discard.
+            check `type`, then remove `draft: true`. To discard a repo for good, add it
+            to `scripts/ingest-skip.txt`; closing this PR alone does not stop next
+            week's run from drafting it again.
           labels: ingestion, draft

@@ -1,7 +1,10 @@
 // Client-side gallery filtering. Pure DOM: reads data-* attributes off the
 // pre-rendered cards and toggles [hidden]. No framework, no search index.
 // The grid renders fully server-side, so it still works with JS disabled;
-// this only adds interactivity on top.
+// this only adds interactivity on top. The filter state lives in the URL query
+// (?q=&dept=&type=&tags=a,b), so a filtered view can be linked.
+
+import { filterQuery, matches, readFilters } from '../lib/filter.ts';
 
 const q = document.getElementById('q');
 const dept = document.getElementById('dept');
@@ -14,24 +17,42 @@ const empty = document.getElementById('empty');
 
 const activeTags = new Set();
 
+// Restore the filters from the URL; a tag no button carries is dropped.
+const initial = readFilters(location.search);
+if (q) q.value = initial.q;
+// A value with no option leaves the select blank (selectedIndex -1), so fall back to "all".
+function restoreSelect(select, value) {
+  if (!select) return;
+  select.value = value;
+  if (select.selectedIndex < 0) select.value = '';
+}
+restoreSelect(dept, initial.dept);
+restoreSelect(type, initial.type);
+for (const btn of tagButtons) {
+  if (initial.tags.includes(btn.dataset.tag)) {
+    activeTags.add(btn.dataset.tag);
+    btn.setAttribute('aria-pressed', 'true');
+  }
+}
+
 function apply() {
-  const term = (q?.value || '').trim().toLowerCase();
-  const d = dept?.value || '';
-  const t = type?.value || '';
+  const filters = { q: q?.value || '', dept: dept?.value || '', type: type?.value || '', tags: [...activeTags] };
   let shown = 0;
 
   for (const card of cards) {
-    const cardTags = (card.dataset.tags || '').split('|').filter(Boolean);
-    const matches =
-      (!term || card.dataset.search.includes(term)) &&
-      (!d || card.dataset.department === d) &&
-      (!t || card.dataset.type === t) &&
-      // OR within tags: match if the card carries any selected tag
-      (activeTags.size === 0 || cardTags.some((tag) => activeTags.has(tag)));
-
-    card.hidden = !matches;
-    if (matches) shown++;
+    const show = matches(
+      {
+        search: card.dataset.search || '',
+        department: card.dataset.department || '',
+        type: card.dataset.type || '',
+        tags: (card.dataset.tags || '').split('|').filter(Boolean),
+      },
+      filters,
+    );
+    card.hidden = !show;
+    if (show) shown++;
   }
+  history.replaceState(history.state, '', `${location.pathname}${filterQuery(filters, location.search)}${location.hash}`);
 
   if (resultLine) {
     resultLine.textContent = `${shown} of ${cards.length} shown`;

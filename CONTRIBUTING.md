@@ -23,11 +23,13 @@ flow is: **copy the template, fill it in, open a pull request.**
    | `authors` | ✔ | A list; at least one name. |
    | `department` | ✔ | `Industrial Ecology` or `Environmental Biology`. |
    | `type` | ✔ | `software`, `data`, `model`, or `other`. |
-   | `tags` | – | Keywords. They power the tag filter, so reuse existing ones where you can. |
+   | `tags` | – | Keywords in lower case with dashes (`open-data`). They power the tag filter, so reuse existing ones where you can. |
+   | `license` | – | The SPDX licence id, e.g. `MIT`, `Apache-2.0`, `CC-BY-4.0`. |
+   | `doi` | – | The project's **own** DOI, bare: `10.5281/zenodo.1234567`. For software or data on Zenodo, use the concept DOI, which covers every version. |
    | `links.repo` | – | Source repository URL. |
    | `links.demo` | – | Live demo / hosted app URL. |
    | `links.docs` | – | Documentation URL. |
-   | `links.paper` | – | Paste the **DOI URL** (`https://doi.org/…`). |
+   | `links.paper` | – | A paper **about** the project: paste its DOI URL (`https://doi.org/…`). |
    | `links.image` | – | A preview image: a remote URL, or a file you add under `public/images/`. |
    | `featured` | – | `true` sorts the project to the front. Use sparingly. |
 
@@ -52,10 +54,14 @@ flow is: **copy the template, fill it in, open a pull request.**
 
 ## Adding a picture, chart, or interactive element
 
-- **A picture or static chart** works in any entry: use standard Markdown
-  (`![describe the image](/images/my-project/chart.png)`) or set `links.image`
-  for the card/detail preview. Put image files under `public/images/`. Images
-  are lazy-loaded automatically.
+- **A picture or static chart** works in any entry. In the Markdown text, put
+  the file next to your entry and link it relatively
+  (`![describe the image](./my-project/chart.png)` for
+  `src/content/projects/my-project/chart.png`); the site resizes it for you.
+  For the card/detail preview (`links.image`) or a `<Figure>`, put the file
+  under `public/images/` and write `/images/my-project/chart.png`. A path
+  starting with `/` only works in those two places: in Markdown text it would
+  point outside the gallery. Images are lazy-loaded automatically.
 
 - **An interactive chart, notebook, video, or dashboard** should stay hosted
   where it's maintained (your app, an Observable notebook, YouTube…) and be
