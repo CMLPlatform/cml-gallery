@@ -18,3 +18,10 @@ test('links accept web URLs only', () => {
     assert.equal(entrySchema.safeParse(entry({ demo: url })).success, false, url);
   }
 });
+
+test('license is an SPDX id and doi a bare DOI', () => {
+  const ok = { ...entry({}), license: 'CC-BY-4.0', doi: '10.5281/zenodo.1234567' };
+  assert.ok(entrySchema.safeParse(ok).success);
+  assert.equal(entrySchema.safeParse({ ...ok, license: 'MIT License' }).success, false);
+  assert.equal(entrySchema.safeParse({ ...ok, doi: 'https://doi.org/10.5281/zenodo.1' }).success, false);
+});

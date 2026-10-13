@@ -22,11 +22,13 @@ type: software                           # [required] software | data | model | 
 tags:                                    # optional, but they power the tag filter
   - life-cycle-assessment
   - open-data
+license: MIT                             # optional; SPDX licence id, e.g. MIT, Apache-2.0, CC-BY-4.0
+doi: 10.5281/zenodo.1234567              # optional; the project's OWN DOI, bare (e.g. its Zenodo concept DOI)
 links:                                   # all optional, delete any you don't have
   repo: https://github.com/org/repo
   demo: https://example.org
   docs: https://example.org/docs
-  paper: https://doi.org/10.xxxx/xxxxx   # paste the DOI URL
+  paper: https://doi.org/10.xxxx/xxxxx   # a paper ABOUT the project: paste its DOI URL
   image: https://example.org/preview.png # remote URL, or a path like /images/my-project.png
 featured: false                          # optional; featured projects sort first
 ---

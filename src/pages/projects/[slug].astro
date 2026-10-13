@@ -21,7 +21,7 @@ const links = [
   ['Repository', data.links.repo],
   ['Live demo', data.links.demo],
   ['Documentation', data.links.docs],
-  ['Paper / DOI', data.links.paper],
+  ['Paper', data.links.paper],
 ].filter(([, url]) => url) as [string, string][];
 ---
 
@@ -61,6 +61,26 @@ const links = [
               <ul class="tags">
                 {data.tags.map((t) => <Tag tag={t} />)}
               </ul>
+            </dd>
+          </div>
+        )
+      }
+      {
+        data.license && (
+          <div>
+            <dt>Licence</dt>
+            <dd>
+              <a href={`https://spdx.org/licenses/${data.license}.html`}>{data.license}</a>
+            </dd>
+          </div>
+        )
+      }
+      {
+        data.doi && (
+          <div>
+            <dt>DOI</dt>
+            <dd>
+              <a href={`https://doi.org/${data.doi}`}>{data.doi}</a>
             </dd>
           </div>
         )

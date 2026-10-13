@@ -21,6 +21,10 @@ const webUrl = z.url({ protocol: /^https?$/ });
 // The ingest script fills unknown fields with "TODO …"; a published entry must not keep one.
 const TODO = /^\s*TODO\b/i;
 
+// An SPDX licence id such as `MIT` or `CC-BY-4.0`, and a bare DOI such as `10.5281/zenodo.1234567`.
+const SPDX_ID = /^[A-Za-z0-9.+-]+$/;
+const DOI = /^10\.\d{4,9}\/\S+$/;
+
 export const entrySchema = z
   .object({
     // What it is
@@ -39,8 +43,14 @@ export const entrySchema = z
     type: z.enum(PROJECT_TYPES),
     tags: z.array(z.string().min(1)).default([]),
 
-    // Links: all optional. Paste full URLs; for a paper, paste its DOI URL
-    // (https://doi.org/…). `image` may be a remote URL or a path under /public.
+    // Licence and identifier, both optional. `doi` is the project's own DOI, without
+    // https://doi.org/: for software or data on Zenodo, the concept DOI that covers
+    // every version. A paper written about the project goes in `links.paper`.
+    license: z.string().regex(SPDX_ID, 'Use an SPDX licence id, e.g. `MIT` or `CC-BY-4.0`.').optional(),
+    doi: z.string().regex(DOI, 'Write the DOI bare, e.g. `10.5281/zenodo.1234567`.').optional(),
+
+    // Links: all optional. Paste full URLs; for a paper about the project, paste
+    // its DOI URL (https://doi.org/…). `image` may be a remote URL or a path under /public.
     links: z
       .object({
         repo: webUrl.optional(),

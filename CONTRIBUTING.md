@@ -24,10 +24,12 @@ flow is: **copy the template, fill it in, open a pull request.**
    | `department` | ✔ | `Industrial Ecology` or `Environmental Biology`. |
    | `type` | ✔ | `software`, `data`, `model`, or `other`. |
    | `tags` | – | Keywords. They power the tag filter, so reuse existing ones where you can. |
+   | `license` | – | The SPDX licence id, e.g. `MIT`, `Apache-2.0`, `CC-BY-4.0`. |
+   | `doi` | – | The project's **own** DOI, bare: `10.5281/zenodo.1234567`. For software or data on Zenodo, use the concept DOI, which covers every version. |
    | `links.repo` | – | Source repository URL. |
    | `links.demo` | – | Live demo / hosted app URL. |
    | `links.docs` | – | Documentation URL. |
-   | `links.paper` | – | Paste the **DOI URL** (`https://doi.org/…`). |
+   | `links.paper` | – | A paper **about** the project: paste its DOI URL (`https://doi.org/…`). |
    | `links.image` | – | A preview image: a remote URL, or a file you add under `public/images/`. |
    | `featured` | – | `true` sorts the project to the front. Use sparingly. |
 

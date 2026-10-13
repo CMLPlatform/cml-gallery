@@ -11,6 +11,7 @@ tags:
   - biodiversity
   - monitoring
   - open-data
+license: CC-BY-4.0
 links:
   docs: https://example.org
 featured: false

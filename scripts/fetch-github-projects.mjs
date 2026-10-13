@@ -4,11 +4,13 @@
  *
  * Fetches public repositories in the CMLPlatform GitHub org that carry the
  * `cml-showcase` topic and writes a DRAFT gallery entry for each one, derived
- * from the repo's metadata (description, homepage, topics, README excerpt).
+ * from the repo's metadata (description, homepage, topics, licence, README
+ * excerpt). When the repo has a CITATION.cff, or else a codemeta.json, its
+ * authors and DOI fill the draft's `authors` and `doi`.
  *
  * Drafts are written with `draft: true`, so they're excluded from the built
  * site until a maintainer reviews one, fills the TODO fields (department,
- * authors), and removes the flag. Each draft is checked against the same
+ * and authors when no citation file named them), and removes the flag. Each draft is checked against the same
  * schema the site builds with before it is written.
  *
  * A repo is skipped when an existing entry already links to it
@@ -89,6 +91,81 @@ export function parseSkipList(text) {
   );
 }
 
+/** The bare DOI (`10.…/…`) in a string such as `https://doi.org/10.5281/zenodo.1`, if any. */
+export function bareDoi(text) {
+  return /\b(10\.\d{4,9}\/[^\s"'<>]+)/.exec(String(text ?? ''))?.[1];
+}
+
+/** Authors and DOI from a CITATION.cff: `authors:` names and the top-level `doi:`. */
+export function parseCitationCff(text) {
+  // shortcut: a line reader for the block YAML that cffinit and Zenodo write, not a YAML
+  // parser; flow-style `authors: [...]` and a DOI only under `identifiers:` are missed.
+  const scalar = (v) => {
+    const s = v.trim();
+    const quoted = /^(["'])(.*)\1$/.exec(s);
+    return quoted ? quoted[2] : s.replace(/\s+#.*$/, '');
+  };
+  const authors = [];
+  let doi;
+  let inAuthors = false;
+  let person = null;
+  let dashCol = -1; // column of the `-` that starts each author
+  let keyCol = -1; // column of an author's own keys; deeper lines are nested values
+  const flush = () => {
+    if (person) {
+      const name =
+        person.name ??
+        [person['given-names'], person['name-particle'], person['family-names'], person['name-suffix']]
+          .filter(Boolean)
+          .join(' ');
+      if (name) authors.push(name);
+    }
+    person = null;
+  };
+  for (const line of String(text).split(/\r?\n/)) {
+    if (/^\s*(#|$)/.test(line)) continue;
+    const top = /^([\w-]+):\s*(.*)$/.exec(line);
+    if (top) {
+      flush();
+      inAuthors = top[1] === 'authors';
+      dashCol = -1;
+      if (top[1] === 'doi') doi = bareDoi(scalar(top[2]));
+      continue;
+    }
+    const field = inAuthors && /^( *)(- +)?([\w-]+):\s*(.*)$/.exec(line);
+    if (!field) continue;
+    const col = field[1].length + (field[2]?.length ?? 0);
+    if (field[2] && (dashCol < 0 || field[1].length === dashCol)) {
+      flush();
+      person = {};
+      dashCol = field[1].length;
+      keyCol = col;
+    }
+    if (person && col === keyCol) person[field[3]] = scalar(field[4]);
+  }
+  flush();
+  return { authors, doi };
+}
+
+/** Authors and DOI from a codemeta.json (`author`, and `identifier` or `@id`). */
+export function parseCodemeta(text) {
+  let meta;
+  try {
+    meta = JSON.parse(text);
+  } catch {
+    return { authors: [] }; // a broken file leaves the TODO placeholder for a maintainer
+  }
+  const authors = [meta.author ?? []]
+    .flat()
+    .map((a) => (typeof a === 'string' ? a : (a.name ?? [a.givenName, a.familyName].filter(Boolean).join(' '))))
+    .filter(Boolean);
+  const doi = [meta.identifier, meta['@id']]
+    .flat()
+    .map((id) => bareDoi(typeof id === 'object' ? id?.value : id))
+    .find(Boolean);
+  return { authors, doi };
+}
+
 /** Serialise a value as a YAML scalar/array (double-quoted strings are safe). */
 function yamlValue(v) {
   if (Array.isArray(v)) {
@@ -99,18 +176,25 @@ function yamlValue(v) {
   return JSON.stringify(String(v));
 }
 
-/** The draft entry's frontmatter fields, validated against the site's schema. */
-export function toEntryFields(repo) {
+/**
+ * The draft entry's frontmatter fields, validated against the site's schema.
+ * `meta` holds the authors and DOI read from the repo's citation file, if any.
+ */
+export function toEntryFields(repo, meta = {}) {
   const fields = {
     name: repo.name,
     summary: truncate(repo.description || repo.name, SUMMARY_MAX),
-    authors: ['TODO: add author(s)'],
+    authors: meta.authors?.length ? meta.authors : ['TODO: add author(s)'],
     department: 'Industrial Ecology', // TODO: verify (schema needs a valid value)
     type: 'software', // TODO: verify (software | data | model | other)
     tags: (repo.topics || []).filter((t) => t !== TOPIC).slice(0, 8),
     links: {},
     draft: true,
   };
+  // GitHub reports NOASSERTION for a licence file it cannot match to one SPDX id.
+  const spdx = repo.license?.spdx_id;
+  if (spdx && spdx !== 'NOASSERTION') fields.license = spdx;
+  if (meta.doi) fields.doi = meta.doi;
   if (repo.html_url) fields.links.repo = repo.html_url;
   // GitHub lets owners type a homepage without a scheme; the schema needs a full URL.
   if (/^https?:\/\//i.test(repo.homepage || '')) fields.links.demo = repo.homepage;
@@ -118,13 +202,13 @@ export function toEntryFields(repo) {
   return fields;
 }
 
-export function toEntryFile(repo, excerpt) {
-  const fields = toEntryFields(repo);
+export function toEntryFile(repo, excerpt, meta) {
+  const fields = toEntryFields(repo, meta);
   const lines = [
     '---',
     '# ─────────────────────────────────────────────────────────────',
     `# AUTO-GENERATED DRAFT from ${repo.full_name}: review before publishing.`,
-    '# Fill in `department` and `authors`, then remove `draft: true`.',
+    '# Fill in or check `department` and `authors`, then remove `draft: true`.',
     '# ─────────────────────────────────────────────────────────────',
     `name: ${yamlValue(fields.name)}`,
     `summary: ${yamlValue(fields.summary)}`,
@@ -132,6 +216,7 @@ export function toEntryFile(repo, excerpt) {
     `department: ${yamlValue(fields.department)}`,
     `type: ${yamlValue(fields.type)}`,
     `tags:${yamlValue(fields.tags)}`,
+    ...['license', 'doi'].filter((k) => fields[k]).map((k) => `${k}: ${yamlValue(fields[k])}`),
     'links:',
     ...Object.entries(fields.links).map(([k, v]) => `  ${k}: ${yamlValue(v)}`),
     'draft: true',
@@ -157,6 +242,16 @@ async function gh(path, accept = 'application/vnd.github+json') {
   return accept.includes('raw') ? res.text() : res.json();
 }
 
+/** The awaited value, or null when GitHub answers 404 (absent). Any other error is rethrown. */
+export async function absentOn404(promise) {
+  try {
+    return await promise;
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err; // rate limit or outage: fail the run rather than write a draft missing data
+  }
+}
+
 async function exists(p) {
   return access(p).then(() => true).catch(() => false);
 }
@@ -167,14 +262,21 @@ const github = {
     return search.items || [];
   },
   async readme(fullName) {
-    try {
-      return await gh(`/repos/${fullName}/readme`, 'application/vnd.github.raw+json');
-    } catch (err) {
-      if (err.status === 404) return ''; // no README
-      throw err; // rate limit or outage: fail the run rather than write a body-less draft
-    }
+    return (await absentOn404(gh(`/repos/${fullName}/readme`, 'application/vnd.github.raw+json'))) ?? '';
+  },
+  /** A file's text from the repo's default branch, or null when it does not exist. */
+  repoFile(fullName, path) {
+    return absentOn404(gh(`/repos/${fullName}/contents/${path}`, 'application/vnd.github.raw+json'));
   },
 };
+
+/** Authors and DOI from CITATION.cff, or from codemeta.json when there is no CITATION.cff. */
+async function citationMeta(fullName, repoFile) {
+  const cff = await repoFile(fullName, 'CITATION.cff');
+  if (cff !== null) return parseCitationCff(cff);
+  const codemeta = await repoFile(fullName, 'codemeta.json');
+  return codemeta !== null ? parseCodemeta(codemeta) : {};
+}
 
 /** Repo URLs that existing entries (published, draft or template) already link to. */
 async function linkedRepos(outDir) {
@@ -193,6 +295,7 @@ export async function main({
   dryRun = false,
   fetchRepos = github.fetchRepos,
   readme = github.readme,
+  repoFile = github.repoFile,
   log = console.log,
 } = {}) {
   const repos = await fetchRepos();
@@ -215,7 +318,11 @@ export async function main({
       skipped++;
       continue;
     }
-    const contents = toEntryFile(repo, readmeExcerpt(await readme(repo.full_name)));
+    const contents = toEntryFile(
+      repo,
+      readmeExcerpt(await readme(repo.full_name)),
+      await citationMeta(repo.full_name, repoFile),
+    );
     if (dryRun) {
       log(`\n─── would write ${file} ───\n${contents}`);
     } else {

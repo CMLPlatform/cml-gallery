@@ -99,13 +99,16 @@ node scripts/fetch-github-projects.mjs --dry-run # preview without writing
 [`scripts/fetch-github-projects.mjs`](scripts/fetch-github-projects.mjs) fetches
 public repositories in the `CMLPlatform` org that carry the **`cml-showcase`**
 topic and writes one draft entry per repo, derived from its description,
-homepage, topics, and README excerpt.
+homepage, topics, licence, and README excerpt. When the repo has a
+`CITATION.cff` (or else a `codemeta.json`), its authors and DOI fill the
+draft's `authors` and `doi`.
 
 Safeguards:
 
 - Every generated entry gets **`draft: true`**, so it is **excluded from the
   built site** until a maintainer reviews it, fills in the TODO fields
-  (`department`, `authors`), and removes the flag. Each draft is checked
+  (`department`, and `authors` when no citation file named them), and removes
+  the flag. Each draft is checked
   against the site's schema before it is written, and the schema refuses an
   entry that still has a `TODO` author, name, summary or tag once `draft: true`
   is gone.
