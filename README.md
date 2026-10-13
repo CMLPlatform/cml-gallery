@@ -2,8 +2,10 @@
 
 [![CI](https://github.com/CMLPlatform/cml-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/CMLPlatform/cml-gallery/actions/workflows/ci.yml)
 [![Deploy](https://github.com/CMLPlatform/cml-gallery/actions/workflows/deploy.yml/badge.svg)](https://github.com/CMLPlatform/cml-gallery/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/CMLPlatform/cml-gallery/branch/main/graph/badge.svg)](https://codecov.io/gh/CMLPlatform/cml-gallery)
 [![Built with Astro](https://img.shields.io/badge/built%20with-Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fcmlplatform.github.io%2Fcml-gallery%2F)](https://cmlplatform.github.io/cml-gallery/)
 
 A prototype public gallery for the software, data, and models built at the
 **Institute of Environmental Sciences (CML)**, Leiden University, so colleagues
