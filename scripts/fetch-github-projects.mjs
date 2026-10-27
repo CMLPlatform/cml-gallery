@@ -53,6 +53,12 @@ export function truncate(text, max) {
   return t.length <= max ? t : t.slice(0, max - 1).trimEnd() + '…';
 }
 
+// An image or link with an inline `(url)` or a reference `[label]` target, optionally wrapped in a link.
+// Alt text, labels and URLs exclude brackets, and URLs allow only one level of parentheses,
+// so every match attempt stops at the next bracket and matching stays linear.
+const TARGET = String.raw`(?:\((?:[^()[\]\s]|\([^()[\]\s]*\))*\)|\[[^[\]]*\])`;
+const BADGE = new RegExp(String.raw`\[?!?\[[^[\]]*\]${TARGET}(?:\]${TARGET})?`, 'g');
+
 /** Pull the first real paragraph out of a README, skipping title/badges/code. */
 export function readmeExcerpt(md) {
   const lines = String(md).split('\n');
@@ -69,8 +75,8 @@ export function readmeExcerpt(md) {
     if (fence) continue;
     if (!line) { if (para.length) break; else continue; }
     if (line.startsWith('#')) continue; // heading
-    // line of images or linked badges; alt and URL exclude brackets so matching stays linear
-    if (!line.replace(/\[?!?\[[^[\]]*\]\([^()\s]*\)(?:\]\([^()\s]*\))?/g, '').trim()) continue;
+    if (!line.replace(BADGE, '').trim()) continue; // line of images or (linked) badges
+    if (/^\[[^[\]]+\]:\s/.test(line)) continue; // link reference definition
     if (/^[-=]{3,}$/.test(line)) continue; // setext underline / hr
     para.push(line);
   }
