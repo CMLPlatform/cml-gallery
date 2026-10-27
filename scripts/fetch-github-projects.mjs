@@ -57,11 +57,16 @@ export function truncate(text, max) {
 export function readmeExcerpt(md) {
   const lines = String(md).split('\n');
   const para = [];
-  let inFence = false;
+  let fence = ''; // the open fence's marker; only the same marker closes it
   for (const raw of lines) {
     const line = raw.trim();
-    if (line.startsWith('```') || line.startsWith('~~~')) { inFence = !inFence; continue; }
-    if (inFence) continue;
+    const marker = line.slice(0, 3);
+    if (marker === '```' || marker === '~~~') {
+      if (!fence) fence = marker;
+      else if (fence === marker) fence = '';
+      continue;
+    }
+    if (fence) continue;
     if (!line) { if (para.length) break; else continue; }
     if (line.startsWith('#')) continue; // heading
     if (/^(\[?!?\[[^\]]*\]\([^)]*\)(\]\([^)]*\))?\s*)+$/.test(line)) continue; // line of images or linked badges

@@ -52,6 +52,7 @@ test('the excerpt skips linked badges, tilde fences and plain link lines', () =>
   const badges = '[![CI](https://x/ci.svg)](https://x/ci) [![Cov](https://x/cov.svg)](https://x/cov)';
   assert.equal(readmeExcerpt(`# T\n\n${badges}\n\n~~~\ncode\n~~~\n\n[Docs](https://x/docs)\n\nReal text.`), 'Real text.');
   assert.equal(readmeExcerpt('See [the docs](https://x/docs) for more.'), 'See [the docs](https://x/docs) for more.');
+  assert.equal(readmeExcerpt('~~~md\n```js\nx\n~~~\n\nReal text.'), 'Real text.');
 });
 
 test('a repo link is found in a file with Windows line endings', () => {
