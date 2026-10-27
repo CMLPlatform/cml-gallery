@@ -69,7 +69,8 @@ export function readmeExcerpt(md) {
     if (fence) continue;
     if (!line) { if (para.length) break; else continue; }
     if (line.startsWith('#')) continue; // heading
-    if (/^(\[?!?\[[^\]]*\]\([^)]*\)(\]\([^)]*\))?\s*)+$/.test(line)) continue; // line of images or linked badges
+    // line of images or linked badges; alt and URL exclude brackets so matching stays linear
+    if (!line.replace(/\[?!?\[[^[\]]*\]\([^()\s]*\)(?:\]\([^()\s]*\))?/g, '').trim()) continue;
     if (/^[-=]{3,}$/.test(line)) continue; // setext underline / hr
     para.push(line);
   }

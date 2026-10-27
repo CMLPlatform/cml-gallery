@@ -53,6 +53,10 @@ test('the excerpt skips linked badges, tilde fences and plain link lines', () =>
   assert.equal(readmeExcerpt(`# T\n\n${badges}\n\n~~~\ncode\n~~~\n\n[Docs](https://x/docs)\n\nReal text.`), 'Real text.');
   assert.equal(readmeExcerpt('See [the docs](https://x/docs) for more.'), 'See [the docs](https://x/docs) for more.');
   assert.equal(readmeExcerpt('~~~md\n```js\nx\n~~~\n\nReal text.'), 'Real text.');
+  // CodeQL's backtracking input: took seconds with the old badge pattern
+  const start = performance.now();
+  readmeExcerpt(`[]()${'[[]()'.repeat(28)}x`);
+  assert.ok(performance.now() - start < 100);
 });
 
 test('a repo link is found in a file with Windows line endings', () => {
