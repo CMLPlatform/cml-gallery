@@ -53,10 +53,22 @@ test('the excerpt skips linked badges, tilde fences and plain link lines', () =>
   assert.equal(readmeExcerpt(`# T\n\n${badges}\n\n~~~\ncode\n~~~\n\n[Docs](https://x/docs)\n\nReal text.`), 'Real text.');
   assert.equal(readmeExcerpt('See [the docs](https://x/docs) for more.'), 'See [the docs](https://x/docs) for more.');
   assert.equal(readmeExcerpt('~~~md\n```js\nx\n~~~\n\nReal text.'), 'Real text.');
-  // CodeQL's backtracking input: took seconds with the old badge pattern
-  const start = performance.now();
-  readmeExcerpt(`[]()${'[[]()'.repeat(28)}x`);
-  assert.ok(performance.now() - start < 100);
+});
+
+test('the excerpt skips reference-style badges and URLs with parentheses', () => {
+  const refs = '[![CI][ci-badge]][ci] ![Cov][cov]\n\n[ci-badge]: https://x/ci.svg';
+  assert.equal(readmeExcerpt(`${refs}\n\nReal text.`), 'Real text.');
+  assert.equal(readmeExcerpt('[![W](https://x/w_(a).svg)](https://x/w_(a))\n\nReal text.'), 'Real text.');
+  assert.equal(readmeExcerpt('See [a][b] for more.'), 'See [a][b] for more.');
+});
+
+test('badge matching stays fast on crafted lines', () => {
+  // the first is CodeQL's backtracking input, which took seconds with an earlier pattern
+  for (const line of [`[]()${'[[]()'.repeat(28)}x`, '[a]('.repeat(5000), '[a]['.repeat(5000), `[a](${'(b'.repeat(5000)}`]) {
+    const start = performance.now();
+    readmeExcerpt(line);
+    assert.ok(performance.now() - start < 100, line.slice(0, 8));
+  }
 });
 
 test('a repo link is found in a file with Windows line endings', () => {
