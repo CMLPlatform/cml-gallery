@@ -15,7 +15,7 @@ can showcase their work in one place.
 
 [![Screenshot of the gallery landing page: a searchable, filterable list of CML projects](docs/screenshot.png)](https://cmlplatform.github.io/cml-gallery/)
 
-> **Proposal-stage prototype.** Built to demonstrate an approach for discussion with the institute. It is **not an official CML site**, and the two sample projects are clearly marked placeholders.
+> **Proposal-stage prototype.** Built to demonstrate an approach for discussion with the institute. It is **not an official CML site**, and the gallery holds its first five entries.
 
 ## The idea
 
@@ -45,6 +45,7 @@ npm run build    # production build to dist/ — also validates every entry
 npm run preview  # serve the production build
 npm run check    # astro check (types)
 npm test         # unit tests
+npm run og-card  # re-render public/og.png, the social card, from docs/og-card/
 npm run test:a11y # axe on the built site; needs `npm run build`, `npx astro preview` and `npx playwright install chromium`
 ```
 
