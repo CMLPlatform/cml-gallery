@@ -18,7 +18,8 @@
     "test": "node --test 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.info --test-reporter=spec --test-reporter-destination=stdout 'src/**/*.test.ts' 'scripts/**/*.test.mjs'",
     "test:a11y": "node scripts/a11y.mjs",
-    "ingest": "node scripts/fetch-github-projects.mjs"
+    "ingest": "node scripts/fetch-github-projects.mjs",
+    "og-card": "uv run --with playwright python docs/og-card/render.py"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",
