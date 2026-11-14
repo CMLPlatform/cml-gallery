@@ -164,21 +164,29 @@
   }
 
   // --- Uncaught Errors ---
+  function scriptLocation(filename) {
+    try {
+      const url = new URL(filename, window.location.origin);
+      return url.protocol === "https:" || url.protocol === "http:"
+        ? url.origin + url.pathname
+        : "unknown";
+    } catch (_) {
+      return "unknown";
+    }
+  }
+
   window.addEventListener("error", (evt) => {
-    sendLog(evt.message || "Unhandled JavaScript Error", "ERROR", {
+    sendLog("Unhandled JavaScript error", "ERROR", {
       error_type: "uncaught_exception",
-      filename: evt.filename ? evt.filename.split("?")[0] : "unknown",
+      filename: evt.filename ? scriptLocation(evt.filename) : "unknown",
       lineno: evt.lineno || 0,
       colno: evt.colno || 0,
-      stack: evt.error ? evt.error.stack || "" : "",
     });
   });
 
-  window.addEventListener("unhandledrejection", (evt) => {
-    const reason = evt.reason;
-    sendLog(reason?.message ? reason.message : String(reason), "ERROR", {
+  window.addEventListener("unhandledrejection", () => {
+    sendLog("Unhandled promise rejection", "ERROR", {
       error_type: "unhandled_promise_rejection",
-      stack: reason?.stack ? reason.stack : "",
     });
   });
 })();

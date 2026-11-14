@@ -19,9 +19,11 @@ back/forward cache, prerendered activation and iframe content are not measured.
 ## Before enabling it
 
 Agree the rollout and data collection with the gallery maintainers first.
-Exports include the user agent, page origin and path, error messages and stacks.
-Page URLs exclude query strings and fragments; error text and stacks may contain
-values from application code, so review them before enabling collection.
+Exports include the user agent, page origin and path, and technical error metadata.
+Error records contain the event type and, when available, script origin/path, line
+and column. Messages, stacks and rejection values are excluded. Page and script
+URLs exclude credentials, query strings and fragments. Review URL paths before
+enabling collection; an application can put private values in a path.
 
 GitHub Pages cannot keep collector credentials secret. Provision an HTTPS proxy
 that accepts `POST /v1/logs` and injects the collector bearer token on the server.
@@ -46,7 +48,7 @@ The gallery does not send an Authorization header.
 3. Trigger a controlled error in the browser console:
    `setTimeout(() => { throw new Error('Controlled RUM check'); }, 0)`.
    In Grafana Explore, select Loki and query
-   `{project="cml-gallery", env="prod"}`. Confirm the controlled error and
+   `{project="cml-gallery", env="prod"}`. Confirm `Unhandled JavaScript error` and
    `WebVital: LCP` appear with `service_name=cml-gallery`.
 4. Verify the monitoring hub's existing blackbox target
    `https://cmlplatform.github.io/cml-gallery/` has `probe_success=1`.
