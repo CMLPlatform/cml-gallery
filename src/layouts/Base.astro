@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import Rum from '../components/Rum.astro';
 import { href } from '../lib/format';
 
 interface Props {
@@ -38,6 +39,7 @@ const ogAlt =
     <meta name="twitter:image:alt" content={ogAlt} />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
+    <Rum />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

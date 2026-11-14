@@ -69,8 +69,8 @@ npm run test:a11y # axe on the built site; needs `npm run build`, `npx astro pre
   filters, visible focus, WCAG-AA contrast, and colourblind-safe (Okabe-Ito)
   category colours that are always paired with text. CI runs axe (WCAG 2.2 AA)
   on every built page in light and dark mode.
-- **Fonts are self-hosted** (`@fontsource`), so the site makes no third-party
-  requests — relevant for an EU institute.
+- **Fonts are self-hosted** (`@fontsource`), so fonts make no third-party
+  requests. Optional browser telemetry sends data to the configured ingestion proxy.
 - Images are lazy-loaded.
 
 ## Deploy
@@ -88,6 +88,11 @@ Before the first deploy:
 
 For Cloudflare Pages instead: build command `npm run build`, output directory
 `dist/`. No Cloudflare config is included here.
+
+## Browser telemetry
+
+Browser telemetry stays disabled until `PUBLIC_RUM_ENDPOINT` names an approved
+HTTPS ingestion proxy. See [the rollout and verification steps](docs/browser-telemetry.md).
 
 ## Optional: automated ingestion
 
