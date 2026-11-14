@@ -24,6 +24,7 @@ Error records contain the event type and, when available, script origin/path, li
 and column. Messages, stacks and rejection values are excluded. Page and script
 URLs exclude credentials, query strings and fragments. Review URL paths before
 enabling collection; an application can put private values in a path.
+Requests omit browser credentials and the Referer header.
 
 GitHub Pages cannot keep collector credentials secret. Provision an HTTPS proxy
 that accepts `POST /v1/logs` and injects the collector bearer token on the server.

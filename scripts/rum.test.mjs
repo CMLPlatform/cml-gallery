@@ -59,6 +59,8 @@ test("LCP sends labelled OTLP logs through the public proxy without credentials 
   events.pointerdown();
   assert.equal(requests.length, 1);
   assert.equal(requests[0].url, "https://rum.example.org/v1/logs");
+  assert.equal(requests[0].options.referrerPolicy, "no-referrer");
+  assert.equal(requests[0].options.credentials, "omit");
   assert.deepEqual({ ...requests[0].options.headers }, { "Content-Type": "application/json" });
   const attributes = requests[0].payload.resourceLogs[0].resource.attributes;
   assert.equal(attributes.find(({ key }) => key === "project").value.stringValue, "cml-gallery");

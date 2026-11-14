@@ -61,6 +61,8 @@
         headers: headers,
         body: JSON.stringify(payload),
         keepalive: true,
+        referrerPolicy: "no-referrer",
+        credentials: "omit",
         mode: "cors",
       }).catch(() => {
         // A failed export must not create another unhandled rejection.
@@ -112,11 +114,7 @@
       for (const entry of entries) {
         if (entry.hadRecentInput) continue;
         // A session ends at a one-second gap or a five-second total span.
-        if (
-          sessionScore > 0 &&
-          entry.startTime - lastShiftTime < 1000 &&
-          entry.startTime - sessionStart < 5000
-        ) {
+        if (sessionScore > 0 && entry.startTime - lastShiftTime < 1000 && entry.startTime - sessionStart < 5000) {
           sessionScore += entry.value;
         } else {
           sessionStart = entry.startTime;
@@ -167,9 +165,7 @@
   function scriptLocation(filename) {
     try {
       const url = new URL(filename, window.location.origin);
-      return url.protocol === "https:" || url.protocol === "http:"
-        ? url.origin + url.pathname
-        : "unknown";
+      return url.protocol === "https:" || url.protocol === "http:" ? url.origin + url.pathname : "unknown";
     } catch (_) {
       return "unknown";
     }
