@@ -1,0 +1,13 @@
+---
+import script from '../scripts/rum.js?raw';
+
+const endpoint = import.meta.env.PUBLIC_RUM_ENDPOINT?.trim();
+if (endpoint) {
+  const url = new URL(endpoint);
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+    throw new Error('PUBLIC_RUM_ENDPOINT must be an HTTPS proxy URL without credentials, query or fragment.');
+  }
+}
+---
+
+{endpoint && <script is:inline data-endpoint={endpoint} set:html={script} />}
