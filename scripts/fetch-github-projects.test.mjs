@@ -184,6 +184,56 @@ test('the SPDX licence is kept, NOASSERTION is not', () => {
   assert.equal(toEntryFields(repo({ license: null })).license, undefined);
 });
 
+for (const text of ["null", "[]", "42", '"metadata"']) {
+  test(`CodeMeta root ${text} leaves the draft author placeholder`, () => {
+    assert.deepEqual(parseCodemeta(text), { authors: [] });
+  });
+}
+
+test("CodeMeta ignores malformed authors and contribution roles without losing people or DOI", () => {
+  const author = [
+    null,
+    42,
+    { name: {} },
+    { givenName: {}, familyName: [] },
+    { "@type": "Person", givenName: "Ann", familyName: "Bee" },
+    "Example Research Group",
+  ];
+  for (const type of ["Role", "https://schema.org/Role", "http://schema.org/Role", ["Thing", "Role"]]) {
+    for (const key of ["type", "@type"]) author.push({ [key]: type, name: "Software contribution" });
+  }
+  const record = { author, identifier: "https://doi.org/10.5281/zenodo.7654321" };
+  assert.deepEqual(parseCodemeta(JSON.stringify(record)), {
+    authors: ["Ann Bee", "Example Research Group"],
+    doi: "10.5281/zenodo.7654321",
+  });
+});
+
+for (const broken of ["null", '{"author":[null]}']) {
+  test(`main imports the next repository after malformed CodeMeta ${broken}`, async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ingest-"));
+    try {
+      const result = await main({
+        outDir: dir,
+        skipFile: join(dir, "none.txt"),
+        fetchRepos: async () => [named("broken"), named("valid")],
+        readme: async () => "",
+        repoFile: async (fullName, path) =>
+          path === "CITATION.cff" ? null : fullName.endsWith("/broken") ? broken : CODEMETA,
+        log: () => {},
+      });
+      assert.deepEqual(result, { written: 2, skipped: 0 });
+      assert.match(await readFile(join(dir, "broken.md"), "utf8"), /TODO: add author/);
+      const valid = await readFile(join(dir, "valid.md"), "utf8");
+      assert.match(valid, /- "Ann Bee"/);
+      assert.match(valid, /^doi: "10\.5281\/zenodo\.7654321"$/m);
+      assert.match(valid, /^draft: true$/m);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+}
+
 test('absentOn404 maps 404 to null and rethrows anything else', async () => {
   const fail = (status) => Promise.reject(Object.assign(new Error('x'), { status }));
   assert.equal(await absentOn404(fail(404)), null);
