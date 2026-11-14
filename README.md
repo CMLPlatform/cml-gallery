@@ -37,16 +37,20 @@ Full instructions: **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 Requires **Node 24+**: the tests and the ingest script import TypeScript
 directly, which Node 22.12 cannot do without a flag. CI runs Node 26.
+Install [pnpm](https://pnpm.io/installation) before running the commands below.
+The `packageManager` field pins pnpm 12.18.0 for local development and CI.
+The `@emnapi/runtime` development dependency keeps Astro's checker on the same
+1.x runtime as its WebAssembly bridge.
 
 ```bash
-npm install
-npm run dev      # dev server with hot reload
-npm run build    # production build to dist/ — also validates every entry
-npm run preview  # serve the production build
-npm run check    # astro check (types)
-npm test         # unit tests
-npm run og-card  # re-render public/og.png, the social card, from docs/og-card/
-npm run test:a11y # axe on the built site; needs `npm run build`, `npx astro preview` and `npx playwright install chromium`
+pnpm install --frozen-lockfile
+pnpm run dev      # dev server with hot reload
+pnpm run build    # production build to dist/ — also validates every entry
+pnpm run preview  # serve the production build
+pnpm run check    # astro check (types)
+pnpm test         # unit tests
+pnpm run og-card  # re-render public/og.png, the social card, from docs/og-card/
+pnpm run test:a11y # axe on the built site; needs `pnpm run build`, `pnpm exec astro preview` and `pnpm exec playwright install chromium`
 ```
 
 ## Project layout
@@ -86,7 +90,7 @@ Before the first deploy:
 2. In repository settings, set **Pages → Build and deployment → Source** to
    **GitHub Actions**.
 
-For Cloudflare Pages instead: build command `npm run build`, output directory
+For Cloudflare Pages instead: build command `pnpm run build`, output directory
 `dist/`. No Cloudflare config is included here.
 
 ## Browser telemetry
@@ -100,7 +104,7 @@ Hand-authored entries are the primary path. As an **optional** supplement, a
 separate script can surface repositories automatically:
 
 ```bash
-npm run ingest                                   # write new drafts
+pnpm run ingest                                   # write new drafts
 node scripts/fetch-github-projects.mjs --dry-run # preview without writing
 ```
 

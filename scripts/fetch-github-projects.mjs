@@ -324,7 +324,7 @@ export async function main({
   return { written, skipped };
 }
 
-// Only act when run directly (`node …` / npm run ingest), not when imported.
+// Only act when run directly (`node …` / pnpm run ingest), not when imported.
 const runDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (runDirectly) {
   main({ dryRun: process.argv.includes('--dry-run') }).catch((err) => {
