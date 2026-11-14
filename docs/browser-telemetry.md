@@ -5,8 +5,10 @@ An unset value produces no telemetry script or requests.
 
 The script captures the final LCP candidate at first interaction or page hide.
 CLS is the largest session of unexpected shifts, with gaps under one second and
-a total span under five seconds. Hiding the page exports CLS only when its
-nonzero maximum has increased; showing the page preserves that maximum.
+a total span under five seconds. The first hide exports CLS, including zero.
+Later hides export increases to the same page maximum; these are updates to one
+visit, not independent observations. Unsupported layout-shift observation produces
+no score. Showing the page preserves its maximum.
 Uncaught JavaScript errors and unhandled promise rejections are also captured. It sends OTLP logs labelled
 `project=cml-gallery`, `service.name=cml-gallery` and `env=prod`.
 Its source follows CMLPlatform/monitoring's `templates/web/rum.html`.
@@ -40,7 +42,7 @@ The gallery does not send an Authorization header.
    with your real proxy URL.
 2. Open the deployed gallery. In the browser Network panel, confirm a request to
    `/v1/logs` succeeds and has no Authorization header. Interact with the page or
-   hide it to export LCP. CLS is exported on hide when its page maximum increases.
+   hide it to export LCP. CLS is exported on first hide, then when its maximum increases.
 3. Trigger a controlled error in the browser console:
    `setTimeout(() => { throw new Error('Controlled RUM check'); }, 0)`.
    In Grafana Explore, select Loki and query
