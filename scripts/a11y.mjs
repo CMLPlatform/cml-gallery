@@ -3,10 +3,10 @@
  * Runs axe (WCAG 2.2 AA) on every page of the built site, in light and dark,
  * and exits 1 on any violation. Backs the README's accessibility claims.
  *
- *   npm run build && npx astro preview &   # serves dist/ at the base path
- *   npm run test:a11y                      # defaults to http://localhost:4321/cml-gallery/
+ *   pnpm run build && pnpm exec astro preview &   # serves dist/ at the base path
+ *   pnpm run test:a11y                            # defaults to http://localhost:4321/cml-gallery/
  *
- * Needs a Chromium for Playwright: `npx playwright install chromium`.
+ * Needs a Chromium for Playwright: `pnpm exec playwright install chromium`.
  */
 
 import { readdir } from 'node:fs/promises';

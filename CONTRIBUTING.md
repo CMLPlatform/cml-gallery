@@ -42,11 +42,11 @@ flow is: **copy the template, fill it in, open a pull request.**
 4. **Check it (optional but nice).** If you have the repo cloned:
 
    ```bash
-   npm install
-   npm run dev      # open the printed URL and find your project
+   pnpm install --frozen-lockfile
+   pnpm run dev      # open the printed URL and find your project
    ```
 
-   `npm run build` validates every entry against the schema: if a required
+   `pnpm run build` validates every entry against the schema: if a required
    field is missing or malformed, it fails with a message pointing at the file.
 
 5. **Open a pull request.** Commit your new file and open a PR. A maintainer
