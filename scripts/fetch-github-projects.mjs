@@ -53,18 +53,30 @@ export function truncate(text, max) {
   return t.length <= max ? t : t.slice(0, max - 1).trimEnd() + '…';
 }
 
+// An image or link with an inline `(url)` or a reference `[label]` target, optionally wrapped in a link.
+// Alt text, labels and URLs exclude brackets, and URLs allow only one level of parentheses,
+// so every match attempt stops at the next bracket and matching stays linear.
+const TARGET = String.raw`(?:\((?:[^()[\]\s]|\([^()[\]\s]*\))*\)|\[[^[\]]*\])`;
+const BADGE = new RegExp(String.raw`\[?!?\[[^[\]]*\]${TARGET}(?:\]${TARGET})?`, 'g');
+
 /** Pull the first real paragraph out of a README, skipping title/badges/code. */
 export function readmeExcerpt(md) {
   const lines = String(md).split('\n');
   const para = [];
-  let inFence = false;
+  let fence = ''; // the open fence's marker; only the same marker closes it
   for (const raw of lines) {
     const line = raw.trim();
-    if (line.startsWith('```')) { inFence = !inFence; continue; }
-    if (inFence) continue;
+    const marker = line.slice(0, 3);
+    if (marker === '```' || marker === '~~~') {
+      if (!fence) fence = marker;
+      else if (fence === marker) fence = '';
+      continue;
+    }
+    if (fence) continue;
     if (!line) { if (para.length) break; else continue; }
     if (line.startsWith('#')) continue; // heading
-    if (/^!?\[[^\]]*\]\([^)]*\)$/.test(line)) continue; // lone image/badge line
+    if (!line.replace(BADGE, '').trim()) continue; // line of images or (linked) badges
+    if (/^\[[^[\]]+\]:\s/.test(line)) continue; // link reference definition
     if (/^[-=]{3,}$/.test(line)) continue; // setext underline / hr
     para.push(line);
   }
@@ -78,7 +90,7 @@ export function normRepoUrl(url) {
 
 /** The `links.repo` URL in an entry file's frontmatter, if any. */
 export function repoLinkOf(fileText) {
-  const front = /^---\n([\s\S]*?)\n---/.exec(fileText)?.[1] ?? '';
+  const front = /^---\r?\n([\s\S]*?)\r?\n---/.exec(fileText)?.[1] ?? '';
   // shortcut: a line regex, not a YAML parser; enough for the flat `links:` block entries use.
   const m = /^\s+repo:\s*["']?([^"'\s#]+)/m.exec(front);
   return m ? normRepoUrl(m[1]) : null;

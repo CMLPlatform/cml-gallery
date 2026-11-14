@@ -1,0 +1,26 @@
+<!doctype html><meta charset=utf-8><title>CML Project Gallery social card</title><link rel=stylesheet href=base.css>
+<style>
+/* Ledger rows: the gallery's own row anatomy (number, name, type). Rows 01-05 are real entries; 06-09 are empty ruled rows, room for more. */
+.rows{position:absolute;inset:0;display:grid;grid-template-rows:repeat(9,1fr)}
+.row{display:flex;align-items:center;border-top:1.5px solid var(--line);font-family:var(--font-mono);color:var(--ink-soft)}
+.row:first-child{border-top:0}
+.l{width:285px;display:flex;align-items:center;gap:14px;padding:0 20px 0 24px}
+.r{margin-left:auto;width:285px;padding:0 24px 0 28px;display:flex;align-items:center}
+.no{font-size:20px;width:28px;flex:none}
+.nm{font-family:var(--font-display);font-weight:600;font-variation-settings:'opsz' 36;font-size:29px;line-height:.95;color:var(--ink);text-wrap:balance;letter-spacing:-.01em}
+.row .chip{font-size:24px;padding:3px 14px}
+.slot{height:16px;border-radius:2px;background:var(--rule)}
+.real{background:color-mix(in srgb,var(--surface) 55%,transparent)}
+</style>
+<div class=rows>
+<div class="row real"><div class=l><span class=no>01</span><span class=nm>R9lab</span></div><div class=r><span class="chip t-software">software</span></div></div>
+<div class="row real"><div class=l><span class=no>02</span><span class=nm>r9cam</span></div><div class=r><span class="chip t-software">software</span></div></div>
+<div class="row real"><div class=l><span class=no>03</span><span class=nm>monitoring</span></div><div class=r><span class="chip t-software">software</span></div></div>
+<div class="row real"><div class=l><span class=no>04</span><span class=nm>RaMa-Scene</span></div><div class=r><span class="chip t-software">software</span></div></div>
+<div class="row real"><div class=l><span class=no>05</span><span class=nm>CML Project Gallery</span></div><div class=r><span class="chip t-software">software</span></div></div>
+<div class=row><div class=l><span class=no>06</span><span class=slot style=width:150px></span></div><div class=r><span class=slot style=width:100px></span></div></div>
+<div class=row><div class=l><span class=no>07</span><span class=slot style=width:120px></span></div><div class=r><span class=slot style=width:130px></span></div></div>
+<div class=row><div class=l><span class=no>08</span><span class=slot style=width:170px></span></div><div class=r><span class=slot style=width:90px></span></div></div>
+<div class=row><div class=l><span class=no>09</span><span class=slot style=width:110px></span></div><div class=r><span class=slot style=width:120px></span></div></div>
+</div>
+<div class=panel><h1 class=name>CML Project Gallery</h1><p class=line>Software, data and models built at CML, in one place</p><p class=addr>cmlplatform.github.io/cml-gallery</p><p class=stamp>Prototype · not an official CML site</p></div>

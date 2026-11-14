@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Tag from '../../components/Tag.astro';
 import Embed from '../../components/Embed.astro';
 import Figure from '../../components/Figure.astro';
-import { asset, deptColor, href } from '../../lib/format';
+import { asset, href } from '../../lib/format';
 import { publishedProjects } from '../../lib/projects';
 
 export async function getStaticPaths() {
@@ -28,7 +28,7 @@ const links = [
 <Base title={`${data.name} · CML Project Gallery`} description={data.summary}>
   <article class="detail wrap">
     <a class="back" href={href('/')}>&larr; All projects</a>
-    <p class="eyebrow" style={`color:${deptColor(data.department)}`}>
+    <p class="eyebrow" data-department={data.department}>
       {data.department} · {data.type}
     </p>
     <h1>{data.name}</h1>

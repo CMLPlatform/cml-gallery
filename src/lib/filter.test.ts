@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { type Filters, filterQuery, matches, readFilters } from './filter.ts';
 
 const card = {
-  search: 'relab disassembly data simon van lierde open-data',
+  search: 'r9lab disassembly data simon van lierde open-data',
   department: 'Industrial Ecology',
   type: 'software',
   tags: ['open-data', 'circular-economy'],

@@ -12,7 +12,7 @@ const entry = (links: Record<string, string>) => ({
 });
 
 test('links accept web URLs only', () => {
-  assert.ok(entrySchema.safeParse(entry({ repo: 'https://github.com/CMLPlatform/relab' })).success);
+  assert.ok(entrySchema.safeParse(entry({ repo: 'https://github.com/CMLPlatform/r9lab' })).success);
   assert.ok(entrySchema.safeParse(entry({ docs: 'http://example.org' })).success);
   for (const url of ['javascript:alert(1)', 'data:text/html,x', 'ftp://example.org']) {
     assert.equal(entrySchema.safeParse(entry({ demo: url })).success, false, url);

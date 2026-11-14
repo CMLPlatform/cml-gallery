@@ -2,8 +2,10 @@
 
 [![CI](https://github.com/CMLPlatform/cml-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/CMLPlatform/cml-gallery/actions/workflows/ci.yml)
 [![Deploy](https://github.com/CMLPlatform/cml-gallery/actions/workflows/deploy.yml/badge.svg)](https://github.com/CMLPlatform/cml-gallery/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/CMLPlatform/cml-gallery/branch/main/graph/badge.svg)](https://codecov.io/gh/CMLPlatform/cml-gallery)
 [![Built with Astro](https://img.shields.io/badge/built%20with-Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fcmlplatform.github.io%2Fcml-gallery%2F)](https://cmlplatform.github.io/cml-gallery/)
 
 A prototype public gallery for the software, data, and models built at the
 **Institute of Environmental Sciences (CML)**, Leiden University, so colleagues
@@ -13,7 +15,7 @@ can showcase their work in one place.
 
 [![Screenshot of the gallery landing page: a searchable, filterable list of CML projects](docs/screenshot.png)](https://cmlplatform.github.io/cml-gallery/)
 
-> **Proposal-stage prototype.** Built to demonstrate an approach for discussion with the institute. It is **not an official CML site**, and the two sample projects are clearly marked placeholders.
+> **Proposal-stage prototype.** Built to demonstrate an approach for discussion with the institute. It is **not an official CML site**, and the gallery holds its first five entries.
 
 ## The idea
 
@@ -43,6 +45,7 @@ npm run build    # production build to dist/ — also validates every entry
 npm run preview  # serve the production build
 npm run check    # astro check (types)
 npm test         # unit tests
+npm run og-card  # re-render public/og.png, the social card, from docs/og-card/
 npm run test:a11y # axe on the built site; needs `npm run build`, `npx astro preview` and `npx playwright install chromium`
 ```
 
@@ -126,9 +129,10 @@ Safeguards:
 [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) runs this weekly
 (and on demand), runs `astro check` on the drafts, and opens a pull request
 with any new ones, so review happens through the same PR flow as everything
-else. That PR is opened with the workflow's own token, so CI does not run on it;
-the check inside the ingest job stands in for it. Delete that workflow for
-hand-curation only.
+else. That PR is opened with the workflow's own token, so CI does not run on it
+by itself. `main` requires the CI `check` to pass, so close and reopen the PR
+(or push a commit to its branch) to start CI before merging. Delete that
+workflow for hand-curation only.
 
 ## Context
 

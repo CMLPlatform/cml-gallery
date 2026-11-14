@@ -164,6 +164,16 @@ a:hover {
   text-transform: uppercase;
   color: var(--green);
 }
+.eyebrow[data-department] {
+  color: var(--dept, var(--ink-soft));
+}
+/* keep in step with DEPT_COLOR in src/lib/format.ts */
+[data-department='Industrial Ecology'] {
+  --dept: var(--dept-ie);
+}
+[data-department='Environmental Biology'] {
+  --dept: var(--dept-eb);
+}
 
 /* ── header ────────────────────────────────────────────────── */
 .site-header {
@@ -490,19 +500,24 @@ a:hover {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.55rem;
+  gap: 0.35rem 1.1rem;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--ink-soft);
 }
+.row-tags li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* the dot sits in the gap before each tag; the list clips it when a tag starts a line */
 .row-tags li::before {
   content: '·';
-  margin-right: 0.55rem;
+  display: inline-block;
+  width: 1.1rem;
+  margin-left: -1.1rem;
+  text-align: center;
   color: var(--green);
-}
-.row-tags li:first-child::before {
-  content: '';
-  margin: 0;
 }
 
 @media (max-width: 560px) {
