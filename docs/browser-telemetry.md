@@ -3,10 +3,16 @@
 The shared layout loads RUM only when `PUBLIC_RUM_ENDPOINT` is set at build time.
 An unset value produces no telemetry script or requests.
 
-The script captures LCP, nonzero accumulated layout shifts, uncaught JavaScript
-errors and unhandled promise rejections. It sends OTLP logs labelled
+The script captures the final LCP candidate at first interaction or page hide.
+CLS is the largest session of unexpected shifts, with gaps under one second and
+a total span under five seconds. Hiding the page exports CLS only when its
+nonzero maximum has increased; showing the page preserves that maximum.
+Uncaught JavaScript errors and unhandled promise rejections are also captured. It sends OTLP logs labelled
 `project=cml-gallery`, `service.name=cml-gallery` and `env=prod`.
-Its source is adapted from CMLPlatform/monitoring's `templates/web/rum.html` at v0.5.0.
+Its source follows CMLPlatform/monitoring's `templates/web/rum.html`.
+The measurement rules follow the [LCP](https://web.dev/articles/lcp) and
+[CLS](https://web.dev/articles/cls) definitions. Visits restored from the
+back/forward cache, prerendered activation and iframe content are not measured.
 
 ## Before enabling it
 
@@ -33,8 +39,8 @@ The gallery does not send an Authorization header.
    For a local build, use `PUBLIC_RUM_ENDPOINT=https://rum.example.org node_modules/.bin/astro build`
    with your real proxy URL.
 2. Open the deployed gallery. In the browser Network panel, confirm a request to
-   `/v1/logs` succeeds and has no Authorization header. Check that an LCP log arrives.
-   CLS is sent when the page becomes hidden and its accumulated score is nonzero.
+   `/v1/logs` succeeds and has no Authorization header. Interact with the page or
+   hide it to export LCP. CLS is exported on hide when its page maximum increases.
 3. Trigger a controlled error in the browser console:
    `setTimeout(() => { throw new Error('Controlled RUM check'); }, 0)`.
    In Grafana Explore, select Loki and query

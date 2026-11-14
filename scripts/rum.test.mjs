@@ -9,7 +9,7 @@ function browser({ endpoint = 'https://rum.example.org/', fail = false } = {}) {
   const requests = [];
   const events = {};
   const observers = {};
-  const document = { currentScript: { dataset: { endpoint } }, visibilityState: 'visible' };
+  const document = { currentScript: { dataset: { endpoint } }, visibilityState: 'visible', addEventListener: (name, handler) => { events[name] = handler; } };
   const window = {
     location: { origin: 'https://cmlplatform.github.io', pathname: '/cml-gallery/', search: '?private=value' },
     addEventListener: (name, handler) => { events[name] = handler; },
@@ -17,6 +17,8 @@ function browser({ endpoint = 'https://rum.example.org/', fail = false } = {}) {
   class PerformanceObserver {
     constructor(callback) { this.callback = callback; }
     observe({ type }) { observers[type] = this.callback; }
+    takeRecords() { return []; }
+    disconnect() {}
   }
   window.PerformanceObserver = PerformanceObserver;
   runInNewContext(source, {
@@ -33,8 +35,9 @@ function browser({ endpoint = 'https://rum.example.org/', fail = false } = {}) {
 const record = (request) => request.payload.resourceLogs[0].scopeLogs[0].logRecords[0];
 
 test('LCP sends labelled OTLP logs through the public proxy without credentials or URL queries', () => {
-  const { requests, observers } = browser();
+  const { requests, observers, events } = browser();
   observers['largest-contentful-paint']({ getEntries: () => [{ startTime: 123.4, element: { tagName: 'H1' } }] });
+  events.pointerdown();
   assert.equal(requests.length, 1);
   assert.equal(requests[0].url, 'https://rum.example.org/v1/logs');
   assert.deepEqual({ ...requests[0].options.headers }, { 'Content-Type': 'application/json' });
@@ -47,10 +50,10 @@ test('LCP sends labelled OTLP logs through the public proxy without credentials 
 
 test('CLS excludes input shifts and flushes once when the page is hidden', () => {
   const { requests, observers, events, document } = browser();
-  observers['layout-shift']({ getEntries: () => [{ value: 0.12, hadRecentInput: false }, { value: 0.8, hadRecentInput: true }] });
+  observers['layout-shift']({ getEntries: () => [{ value: 0.12, startTime: 100, hadRecentInput: false }, { value: 0.8, hadRecentInput: true }] });
   document.visibilityState = 'hidden';
-  events.visibilitychange();
-  events.visibilitychange();
+  events.visibilitychange({ timeStamp: 1000 });
+  events.visibilitychange({ timeStamp: 1000 });
   assert.equal(requests.length, 1);
   assert.equal(record(requests[0]).body.stringValue, 'WebVital: CLS');
   assert.equal(record(requests[0]).attributes.find(({ key }) => key === 'cls_score').value.doubleValue, 0.12);
