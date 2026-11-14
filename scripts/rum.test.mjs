@@ -15,6 +15,7 @@ function browser({ endpoint = 'https://rum.example.org/', fail = false } = {}) {
     addEventListener: (name, handler) => { events[name] = handler; },
   };
   class PerformanceObserver {
+    static supportedEntryTypes = ['largest-contentful-paint', 'layout-shift'];
     constructor(callback) { this.callback = callback; }
     observe({ type }) { observers[type] = this.callback; }
     takeRecords() { return []; }
