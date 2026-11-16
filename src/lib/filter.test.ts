@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test as it } from 'node:test';
 import { type Filters, filterQuery, matches, readFilters } from './filter.ts';
 
 const card = {
@@ -10,7 +10,7 @@ const card = {
 };
 const none: Filters = { q: '', dept: '', type: '', tags: [] };
 
-test('matches applies every set filter, and any one tag', () => {
+it('matches applies every set filter, and any one tag', () => {
   assert.ok(matches(card, none));
   assert.ok(matches(card, { ...none, q: '  Disassembly ' }));
   assert.equal(matches(card, { ...none, q: 'atlas' }), false);
@@ -21,7 +21,7 @@ test('matches applies every set filter, and any one tag', () => {
   assert.equal(matches(card, { ...none, tags: ['biodiversity'] }), false);
 });
 
-test('filters round-trip through the query string', () => {
+it('filters round-trip through the query string', () => {
   const filters = { q: 'flow', dept: 'Industrial Ecology', type: 'data', tags: ['a', 'open-data'] };
   const query = filterQuery(filters);
   // biome-ignore lint/security/noSecrets: a query string, not a secret
@@ -33,7 +33,7 @@ test('filters round-trip through the query string', () => {
   assert.deepEqual(readFilters('?q=a%2Cb&tags=x%2Cy'), { ...none, q: 'a,b', tags: ['x', 'y'] });
 });
 
-test('filterQuery keeps parameters that are not filters', () => {
+it('filterQuery keeps parameters that are not filters', () => {
   // biome-ignore lint/security/noSecrets: a query string, not a secret
   const keep = '?utm_source=x&type=model&tags=a';
   // biome-ignore lint/security/noSecrets: a query string, not a secret

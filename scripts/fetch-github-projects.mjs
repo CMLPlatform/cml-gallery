@@ -129,7 +129,7 @@ export function parseCitationCff(text) {
   return { authors, doi: bareDoi(cff?.doi) };
 }
 
-/** Authors and DOI from a codemeta.json (`author`, and `identifier` or `@id`). */
+/** Authors and DOI from CodeMeta; malformed values and contribution roles supply no author name. */
 export function parseCodemeta(text) {
   let meta;
   try {
@@ -137,9 +137,13 @@ export function parseCodemeta(text) {
   } catch {
     return { authors: [] }; // a broken file leaves the TODO placeholder for a maintainer
   }
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return { authors: [] };
   const authors = [meta.author ?? []]
     .flat()
-    .map((a) => (typeof a === 'string' ? a : (a.name ?? [a.givenName, a.familyName].filter(Boolean).join(' '))))
+    .filter((a) => ![a?.type, a?.['@type']].flat().some((type) =>
+      ['Role', 'https://schema.org/Role', 'http://schema.org/Role'].includes(type)))
+    .map((a) => typeof a === 'string' ? a : typeof a?.name === 'string' ? a.name
+      : [a?.givenName, a?.familyName].filter((name) => typeof name === 'string').join(' '))
     .filter(Boolean);
   const doi = [meta.identifier, meta['@id']]
     .flat()
