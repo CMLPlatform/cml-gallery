@@ -64,12 +64,15 @@ body {
   font-variation-settings: "opsz" 72;
   letter-spacing: -0.02em;
   line-height: 1;
-  text-wrap: balance;
 }
 .line {
   font-size: 36px;
   line-height: 1.2;
-  text-wrap: balance;
+}
+@supports (text-wrap: balance) {
+  .name, .line {
+    text-wrap: balance;
+  }
 }
 .addr {
   font-size: 31px;

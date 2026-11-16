@@ -108,7 +108,12 @@ h3 {
   font-variation-settings: 'opsz' 72;
   line-height: 1.08;
   letter-spacing: -0.008em;
-  text-wrap: balance;
+}
+
+@supports (text-wrap: balance) {
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
 }
 
 a {
@@ -151,7 +156,7 @@ a:hover {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
@@ -275,10 +280,14 @@ a:hover {
 /* ── the register toolbar (search + filters) ───────────────── */
 .console {
   background: color-mix(in srgb, var(--paper) 92%, transparent);
-  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
   padding: 0.7rem 0;
   margin-top: 1.4rem;
+}
+@supports (backdrop-filter: blur(8px)) {
+  .console {
+    backdrop-filter: blur(8px);
+  }
 }
 /* Sticky only where the console is one row tall; stacked on small screens it
    would pin ~40% of the viewport. */
