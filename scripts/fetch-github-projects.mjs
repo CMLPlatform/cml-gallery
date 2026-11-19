@@ -153,7 +153,7 @@ export function parseCodemeta(text) {
 }
 
 /** Serialise a value as a YAML scalar/array (double-quoted strings are safe). */
-function yamlValue(v) {
+export function yamlValue(v) {
   if (Array.isArray(v)) {
     if (!v.length) return '[]';
     return '\n' + v.map((x) => `  - ${JSON.stringify(String(x))}`).join('\n');

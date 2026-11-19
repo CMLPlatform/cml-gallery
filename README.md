@@ -104,8 +104,9 @@ Hand-authored entries are the primary path. As an **optional** supplement, a
 separate script can surface repositories automatically:
 
 ```bash
-pnpm run ingest                                   # write new drafts
+pnpm run ingest                                   # write new drafts from both sources
 node scripts/fetch-github-projects.mjs --dry-run # preview without writing
+node scripts/fetch-openalex-records.mjs --dry-run
 ```
 
 [`scripts/fetch-github-projects.mjs`](scripts/fetch-github-projects.mjs) fetches
@@ -114,6 +115,15 @@ topic and writes one draft entry per repo, derived from its description,
 homepage, topics, licence, and README excerpt. When the repo has a
 `CITATION.cff` (or else a `codemeta.json`), its authors and DOI fill the
 draft's `authors` and `doi`.
+
+[`scripts/fetch-openalex-records.mjs`](scripts/fetch-openalex-records.mjs) asks
+[OpenAlex](https://openalex.org) for datasets and software on Zenodo whose
+Leiden University authors give "Institute of Environmental Sciences" as their
+affiliation, and writes one draft per record with its title, authors, DOI and
+description. A record whose authors give only "Leiden University" is missed.
+Zenodo gives each version its own DOI, so only the first record with a given
+title is drafted. The summary starts as a `TODO`, because a record title rarely
+says what the project is.
 
 Safeguards:
 
@@ -126,9 +136,10 @@ Safeguards:
   is gone.
 - **Nothing is drafted twice or overwritten:** a repo is skipped when an
   existing entry already links to it in `links.repo` (whatever the file is
-  called), when `<repo-name>.md` or `.mdx` already exists, or when it is listed
-  in [`scripts/ingest-skip.txt`](scripts/ingest-skip.txt). Add a repo there to
-  decline it for good; closing its draft PR alone does not stop the next run.
+  called), and a record when an entry already has its `doi`. Either is skipped
+  when a file of its name already exists, or when it is listed in
+  [`scripts/ingest-skip.txt`](scripts/ingest-skip.txt). Add a repo or DOI there
+  to decline it for good; closing its draft PR alone does not stop the next run.
 
 [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) runs this weekly
 (and on demand), runs `astro check` on the drafts, and opens a pull request
