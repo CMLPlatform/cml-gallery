@@ -1,12 +1,13 @@
-name: Ingest showcase repos (optional)
+name: Ingest showcase projects (optional)
 
 # OPTIONAL automated ingestion. Runs the fetcher, and if it produced any new
 # draft entries, opens a pull request with them for a maintainer to review.
 # Nothing is published automatically: drafts are excluded from the built site
 # until someone reviews a draft and removes `draft: true`.
 #
-# Disabled by default in effect: it only acts when repos carry the
-# `cml-showcase` topic. Remove this file if you prefer hand-curation only.
+# Two sources: CMLPlatform repos with the `cml-showcase` topic, and CML datasets
+# and software on Zenodo, found through OpenAlex. Remove this file if you prefer
+# hand-curation only.
 
 on:
   workflow_dispatch: # run manually from the Actions tab
@@ -36,6 +37,7 @@ jobs:
       - run: node scripts/fetch-github-projects.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/fetch-openalex-records.mjs
       # A PR opened with GITHUB_TOKEN triggers no CI, so check the drafts here.
       - run: pnpm run check
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -59,13 +61,14 @@ jobs:
       - uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
         with:
           branch: auto/ingest-showcase
-          title: 'chore: draft entries from cml-showcase repos'
-          commit-message: 'chore: add draft project entries from GitHub ingestion'
+          title: 'chore: draft entries from showcase repos and Zenodo records'
+          commit-message: 'chore: add draft project entries from ingestion'
           body: |
-            Auto-generated **draft** entries from repositories tagged `cml-showcase`.
+            Auto-generated **draft** entries from repositories tagged `cml-showcase`
+            and from CML datasets and software on Zenodo (via OpenAlex).
 
-            Each needs review before it goes live: set `department`, add `authors`,
-            check `type`, then remove `draft: true`. To discard a repo for good, add it
-            to `scripts/ingest-skip.txt`; closing this PR alone does not stop next
-            week's run from drafting it again.
+            Each needs review before it goes live: set `department`, check `authors`
+            and `type`, write the summary, then remove `draft: true`. To discard one for
+            good, add its repo (owner/name) or DOI to `scripts/ingest-skip.txt`; closing
+            this PR alone does not stop next week's run from drafting it again.
           labels: ingestion, draft

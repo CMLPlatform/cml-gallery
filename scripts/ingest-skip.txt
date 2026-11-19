@@ -1,3 +1,4 @@
-# Repos the weekly ingest should never draft, as owner/name, one per line.
-# Add a repo here when you close its draft PR for good: closing the PR alone
+# What the weekly ingest should never draft, one per line: a repo as owner/name,
+# or a Zenodo record as its bare DOI (10.5281/zenodo.1234567).
+# Add one here when you close its draft PR for good: closing the PR alone
 # does not stop next week's run from drafting it again.
